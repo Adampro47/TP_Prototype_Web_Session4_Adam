@@ -15,8 +15,7 @@ $monEquipe = obtenirStatistiques();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curl Stat - Statistiques</title>
     <link rel="stylesheet" href="./CSS/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="./JS/ScriptGraphique.js"></script>
+
 </head>
 <body>  
     <main>
@@ -24,7 +23,7 @@ $monEquipe = obtenirStatistiques();
         <p>Comparez ou affichez une seule catégorie.</p>
         <header>
             <button id="creerEquipe" onclick="ouvrirFormulaireCreationEquipe()">Créer une équipe</button>
-            <button id="AjouterStatistique" onclick="ouvrirFormulaireChoixDuJoueur()">Ajouter des statistiques à son équipe</button>
+            <button id="AjouterStatistique" >Ajouter des statistiques à son équipe</button>
             <button id="VoirStatistique" onclick="ouvrirFormulaireCreationEquipe()">Voir les statistiques de son équipe</button>
         </header>
         ---
@@ -60,7 +59,7 @@ $monEquipe = obtenirStatistiques();
         </div>
 
         <div class="form-popup" id="FormulaireCreationEquipe">
-            <form id="formCreationEquipe" method="POST">
+            <form id="formCreationEquipe" method="POST" class="form-container">
                 <h1>Création de l'équipe</h1>
                 <label for="Premier"><b>Premier</b></label>
                 <input type="text" placeholder="Nom du premier" name="Premier" id="Premier" required>
@@ -75,9 +74,9 @@ $monEquipe = obtenirStatistiques();
         </div>
 
         <div class="form-popup" id="FormulaireChoixDuJoueur">
-            <form action="Connecter.php" method="post" id="FormulaireAjoutStatistique" class="form-container">
+            <form method="post" id="formChoixDuJoueur" class="form-container">
                 <h1>Choisir le joueur</h1>
-                <select required id="JoueurChoisi">
+                <select id="JoueurChoisi">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -86,13 +85,12 @@ $monEquipe = obtenirStatistiques();
                 <button type="submit" class="btn">Choisir le joueur</button>
             </form>
         </div>
-        <script>
-            let joueurActif = null;
-        </script>
 
         <div class="form-popup" id="FormulaireAjoutStatistique">
-            <form id="formAjoutStatistique" method="POST">
+            <form id="formAjoutStatistique" method="POST" class="form-container">
                 <h1>Ajouter des statistiques</h1>
+                <label id="Joueur-ajout-de-stat">Joueur</label>
+                
                 <label for="type-lancer">Type de lancer :</label>
                 <select name="type_lancer" id="type-lancer">
                     <option value="Placement">Placement</option>
@@ -103,23 +101,61 @@ $monEquipe = obtenirStatistiques();
                     <option value="Placement gelé">Placement gelé</option>
                 </select>
 
-                <label for="note">Note (1-4) :</label>
-                <input type="number" name="note" id="note" min="1" max="4" required>
+                <label for="nombre">Nombre :</label>
+                <ul id="selectList">
+                    <li><select name="select_0" class="select-item" onchange="addNewSelect(this)">
+                        <option value="null" selected>Choisir...</option>
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select></li>
+                </ul>
                 <button type="submit" class="btn">Ajouter</button>
             </form>
         </div>
-
+        <canvas id="statsChart"></canvas>
     </main>
 
 
     <script>
-    // AJAX pour créer une équipe
+        document.getElementById('formChoixDuJoueur').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var selectElement = document.getElementById('JoueurChoisi');
+        var joueurchoisiTexte = selectElement.options[selectElement.selectedIndex].text;
+        ouvrirFormulaireAjoutStatistique(joueurchoisiTexte);
+    });
+        // Obtenir liste joueur
+    document.getElementById('AjouterStatistique').addEventListener('click', function(event) {
+        const formData = new FormData();
+        event.preventDefault(); 
+        formData.append('action', 'obtenirNomJoueur');
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur de serveur : ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Réponse du serveur :', data);
+            if (data.status === 'success') {
+                ouvrirFormulaireChoixDuJoueur(data.premier,data.deuxieme,data.troisieme,data.quatrieme);
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        }).catch(error => {
+            console.error('Erreur lors de la requête fetch:', error);
+        });
+    });
+        // Creer équipe
     document.getElementById('formCreationEquipe').addEventListener('submit', function(event) {
-        event.preventDefault();  // Empêche le formulaire de se soumettre normalement
-        const formData = new FormData(this);  // Récupère toutes les données du formulaire
-        formData.append('action', 'creerEquipe');  // Ajoute l'action pour le traitement côté PHP
-
-        // Envoie la requête avec fetch
+        alert("Essaye creation");
+        event.preventDefault(); 
+        const formData = new FormData(this);
+        formData.append('action', 'creerEquipe'); 
         fetch('data.php', {
             method: 'POST',
             body: formData
@@ -127,11 +163,12 @@ $monEquipe = obtenirStatistiques();
             if (!response.ok) {
                 throw new Error('Erreur de serveur : ' + response.statusText);
             }
-            return response.json();  // Tente de parser la réponse JSON
+            return response.json();
         }).then(data => {
             console.log('Réponse du serveur :', data);
             if (data.status === 'success') {
-                alert(data.message);  // Affiche un message de succès
+                fermerFormulaireCreationEquipe();
+                alert(data.message); 
             } else {
                 alert('Erreur : ' + data.message);
             }
@@ -140,34 +177,45 @@ $monEquipe = obtenirStatistiques();
         });
     });
 
-    // AJAX pour ajouter des statistiques
+    // Envoyer stat
+
     document.getElementById('formAjoutStatistique').addEventListener('submit', function(event) {
-        event.preventDefault();  // Empêche le formulaire de se soumettre normalement
-        const formData = new FormData(this);  // Récupère toutes les données du formulaire
-        formData.append('action', 'ajouterStatistique');  // Ajoute l'action pour le traitement côté PHP
+    event.preventDefault(); 
 
-        // Envoie la requête avec fetch
-        fetch('data.php', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
-            return response.json();  // Tente de parser la réponse JSON
-        }).then(data => {
-            console.log('Réponse du serveur :', data);
-            if (data.status === 'success') {
-                alert(data.message);  // Affiche un message de succès
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de la requête fetch:', error);
-        });
+    const formData = new FormData(this);  
+
+    const selectItems = document.querySelectorAll('.select-item');
+    selectItems.forEach((select, index) => {
+        if (select.value !== 'null' && select.value !== '') {
+            formData.append(`select_${index}`, select.value); 
+        }
     });
+
+    formData.append('action', 'ajouterStatistique');
+
+    fetch('data.php', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    }).then(data => {
+        console.log('Réponse du serveur :', data);
+        if (data.status === 'success') {
+            alert(data.message);
+        }
+    }).catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });
+});
+
 </script>
 
 </body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="./JS/ScriptGraphique.js"></script>
+
 
 </html>
