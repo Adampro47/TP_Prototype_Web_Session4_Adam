@@ -76,20 +76,35 @@
         <form action="Connecter.php" method="post" id="FormulaireAjoutStatistique" class="form-container">
             <h1>Choisir le joueur</h1>
 
-            <button type="button" class="btn" onclick="VerifierCreationEquipe()"><?php echo("") ?></button>
+            <?php
+                for ($i = 1; $i <= 4; $i++) {
+                    echo "<button type='submit' id='btn$i'>Chargement du nom du joueur...</button><br>";
+                }
+            ?>
         </form>
         </div>
-
+        <script>
+            let joueurActif = null;
+        </script>
 
         <div class="form-popup" id="FormulaireAjoutStatistique">
-        <form action="Connecter.php" method="post" id="FormulaireAjoutStatistique" class="form-container">
-            <h1>Ajout de statistique pour le joueur : </h1>
+  <form action="AjouterStatistique.php" method="post" id="FormulaireAjoutStatistiqueForm" class="form-container">
+    <h1>Ajout de statistique pour un joueur</h1>
 
-            <button type="button" class="btn" onclick="VerifierCreationEquipe()">Creer</button>
+    <p id="joueur-selectionne">Joueur : </p>
+    </select>
 
-            <button type="button" class="btn" onclick="VerifierCreationEquipe()">Creer</button>
-        </form>
-        </div>
+    <label for="type-lancer">Type de lancer :</label>
+    <select id="type-lancer" name="type_lancer" required>
+      <!-- Ces options seront remplies dynamiquement par JS -->
+    </select>
+
+    <label for="note">Note (1 à 4) :</label>
+    <input type="number" min="1" max="4" name="note" id="note" required>
+
+    <button type="submit" class="btn">Ajouter la statistique</button>
+  </form>
+</div>
 
 
         <canvas id="statsChart"></canvas>
