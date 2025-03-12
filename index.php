@@ -6,12 +6,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CurlStat</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./JS/ScriptGraphique.js"></script>
 </head>
 <body>
 
 <button class="open-button" id=boutonOuvrirConnexion onclick="ouvrirFormulaireConnexion()">Connexion</button>
 <button class="open-button" id=boutonOuvrirCreation onclick="ouvrirFormulaireCreation()">Création</button>
+<button id="toggle-mode">Passer en mode Affichage</button>
+ 
+ <div id="comparison-mode">
+     <select id="niveau-select-1">
+         <option value="u15">U15</option>
+         <option value="u18-garcons">U18 Garçons</option>
+         <option value="u18-filles">U18 Filles</option>
+         <option value="u20-garcons">U20 Garçons</option>
+         <option value="u20-filles">U20 Filles</option>
+         <option value="mon_equipe">Mon équipe</option>
+     </select>
 
+     <select id="niveau-select-2">
+         <option value="u15">U15</option>
+         <option value="u18-garcons">U18 Garçons</option>
+         <option value="u18-filles">U18 Filles</option>
+         <option value="u20-garcons">U20 Garçons</option>
+         <option value="u20-filles">U20 Filles</option>
+
+     </select>
+ </div>
+
+ <div id="single-mode" style="display: none;">
+     <select id="niveau-select-single">
+         <option value="u15">U15</option>
+         <option value="u18-garcons">U18 Garçons</option>
+         <option value="u18-filles">U18 Filles</option>
+         <option value="u20-garcons">U20 Garçons</option>
+         <option value="u20-filles">U20 Filles</option>
+     </select>
+ </div>
 <div class="form-popup" id="FormulaireConnexion">
 <form action="Connecter.php" method="post" id="FormulaireConnexion" class="form-container">
     <h1>Connexion</h1>

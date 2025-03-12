@@ -1,43 +1,3 @@
-const monEquipe = {
-    "Premier": {
-        "Placement": [],
-        "Sortie": [],
-        "Raise": [],
-        "Garde": [],
-        "Double sortie": [],
-        "Placement gelé": []
-    },
-    "Deuxieme": {
-        "Placement": [],
-        "Sortie": [],
-        "Raise": [],
-        "Garde": [],
-        "Double sortie": [],
-        "Placement gelé": []
-    },
-    "Troisieme": {
-        "Placement": [],
-        "Sortie": [],
-        "Raise": [],
-        "Garde": [],
-        "Double sortie": [],
-        "Placement gelé": []
-    },
-    "Quatrieme": {
-        "Placement": [],
-        "Sortie": [],
-        "Raise": [],
-        "Garde": [],
-        "Double sortie": [],
-        "Placement gelé": []
-    }
-}
-const monEquipeJoueur = {
-        "Premier": "",
-        "Deuxieme": "",
-        "Troisieme": "",
-        "Quatrieme": ""
-}
 const statsData = {
     "u15": {
         "Placement": [3, 4, 2, 3, 4, 4, 3, 2, 4, 3],
@@ -80,21 +40,21 @@ const statsData = {
         "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
     }
 };
-
+alert(document.getElementById('statsChart'));
 const ctx = document.getElementById('statsChart').getContext('2d');
-var statsChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: Object.keys(statsData["u15"]),
-        datasets: []
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true, max: 100 }
-        }
-    }
-});
+ var statsChart = new Chart(ctx, {
+     type: 'bar',
+     data: {
+         labels: Object.keys(statsData["u15"]),
+         datasets: []
+     },
+     options: {
+         responsive: true,
+         scales: {
+             y: { beginAtZero: true, max: 100 }
+         }
+     }
+ });
 
 var comparisonMode = true;
 
@@ -143,17 +103,7 @@ document.getElementById('niveau-select-single').addEventListener('change', updat
 function ouvrirFormulaireCreationEquipe() {
     document.getElementById("FormulaireCreationEquipe").style.display = "block";
 }
-function VerifierCreationEquipe() {
-    var premier = document.getElementById("Premier").value;
-    var deuxieme = document.getElementById("Deuxième").value;
-    var troisieme = document.getElementById("Troisième").value;
-    var quatrieme = document.getElementById("Quatrième").value;
-    monEquipeJoueur["Premier"] = premier;
-    monEquipeJoueur["Deuxieme"] = deuxieme;
-    monEquipeJoueur["Troisieme"] = troisieme;
-    monEquipeJoueur["Quatrieme"] = quatrieme;
-    document.getElementById("FormulaireCreationEquipe").style.display = "none";
-}
+
 
 function ouvrirFormulaireAjoutStatistique() {
     remplirTypesDeLancer();
@@ -163,54 +113,5 @@ function ouvrirFormulaireAjoutStatistique() {
 
 
 function ouvrirFormulaireChoixDuJoueur() {
-    if (monEquipeJoueur["Premier"] != "") {
-        remplirBoutonsFormulaire();
         document.getElementById("FormulaireChoixDuJoueur").style.display = "block";
-    } else {
-        alert("Créer une équipe pour commencer");
-    }
-}
-
-function obtenirNomJoueur(joueur) {
-    if (joueur == "1")
-     return monEquipeJoueur["Premier"];
-    if (joueur == "2")
-        return monEquipeJoueur["Deuxieme"];
-    if (joueur == "3")
-        return monEquipeJoueur["Troisieme"];
-    if (joueur == "4")
-        return monEquipeJoueur["Quatrieme"];
-}
-
-function remplirBoutonsFormulaire() {
-    for (let i = 1; i <= 4; i++) {
-        const bouton = document.getElementById("btn" + i);
-        bouton.textContent = obtenirNomJoueur(i);
-        bouton.onclick = () => selectionnerJoueur(i);
-    }
-}
-
-function selectionnerJoueur(index) {
-    if (index == 1) joueurActif = "Premier";
-    else if (index == 2) joueurActif = "Deuxieme";
-    else if (index == 3) joueurActif = "Troisieme";
-    else if (index == 4) joueurActif = "Quatrieme";
-
-    ouvrirFormulaireAjoutStatistique();
-}
-function ajouterStatistique(event) {
-    event.preventDefault();
-
-    const typeLancer = document.getElementById("type-lancer").value;
-    const note = parseInt(document.getElementById("note").value);
-
-    if (joueurActif && typeLancer && note >= 1 && note <= 4) {
-        monEquipe[joueurActif][typeLancer].push(note);
-        alert("Statistique ajoutée pour " + joueurActif + " : " + typeLancer + " → " + note);
-    } else {
-        alert("Informations incomplètes ou invalides.");
-    }
-
-    document.getElementById("FormulaireAjoutStatistiqueForm").reset();
-    document.getElementById("FormulaireAjoutStatistique").style.display = "none";
 }

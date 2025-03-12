@@ -1,12 +1,22 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+// Inclure le fichier de gestion des données
+include('data.php');
+
+// Obtenir les données de l'équipe et les statistiques (si nécessaire)
+$monEquipeJoueur = obtenirEquipe();
+$monEquipe = obtenirStatistiques();
+?>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curl Stat - Statistiques</title>
     <link rel="stylesheet" href="./CSS/style.css">
-
-    
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./JS/ScriptGraphique.js"></script>
 </head>
 <body>  
     <main>
@@ -36,7 +46,6 @@
                 <option value="u18-filles">U18 Filles</option>
                 <option value="u20-garcons">U20 Garçons</option>
                 <option value="u20-filles">U20 Filles</option>
-
             </select>
         </div>
         
@@ -50,66 +59,115 @@
             </select>
         </div>
 
-
         <div class="form-popup" id="FormulaireCreationEquipe">
-        <form action="Connecter.php" method="post" id="FormulaireCreationEquipe" class="form-container">
-            <h1>Création de l'équipe</h1>
-
-            <label for="Premier"><b>Premier</b></label>
-            <input type="text" placeholder="Nom du premier" name="Premier" id="Premier" required>
-
-            <label for="Deuxième"><b>Deuxième</b></label>
-            <input type="text" placeholder="Nom du Deuxième" name="Deuxième" id="Deuxième" required>
-
-            <label for="Troisième"><b>Troisième</b></label>
-            <input type="text" placeholder="Nom du Troisième" name="Troisième" id="Troisième" required>
-
-            <label for="Quatrième"><b>Quatrième</b></label>
-            <input type="text" placeholder="Nom du Quatrième" name="Quatrième" id="Quatrième" required>
-
-            <button type="button" class="btn" onclick="VerifierCreationEquipe()">Creer</button>
-        </form>
+            <form id="formCreationEquipe" method="POST">
+                <h1>Création de l'équipe</h1>
+                <label for="Premier"><b>Premier</b></label>
+                <input type="text" placeholder="Nom du premier" name="Premier" id="Premier" required>
+                <label for="Deuxième"><b>Deuxième</b></label>
+                <input type="text" placeholder="Nom du Deuxième" name="Deuxieme" id="Deuxieme" required>
+                <label for="Troisième"><b>Troisième</b></label>
+                <input type="text" placeholder="Nom du Troisième" name="Troisieme" id="Troisieme" required>
+                <label for="Quatrième"><b>Quatrième</b></label>
+                <input type="text" placeholder="Nom du Quatrième" name="Quatrième" id="Quatrième" required>
+                <button type="submit" class="btn">Créer l'équipe</button>
+            </form>
         </div>
 
-
         <div class="form-popup" id="FormulaireChoixDuJoueur">
-        <form action="Connecter.php" method="post" id="FormulaireAjoutStatistique" class="form-container">
-            <h1>Choisir le joueur</h1>
-
-            <?php
-                for ($i = 1; $i <= 4; $i++) {
-                    echo "<button type='submit' id='btn$i'>Chargement du nom du joueur...</button><br>";
-                }
-            ?>
-        </form>
+            <form action="Connecter.php" method="post" id="FormulaireAjoutStatistique" class="form-container">
+                <h1>Choisir le joueur</h1>
+                <select required id="JoueurChoisi">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <button type="submit" class="btn">Choisir le joueur</button>
+            </form>
         </div>
         <script>
             let joueurActif = null;
         </script>
 
         <div class="form-popup" id="FormulaireAjoutStatistique">
-  <form action="AjouterStatistique.php" method="post" id="FormulaireAjoutStatistiqueForm" class="form-container">
-    <h1>Ajout de statistique pour un joueur</h1>
+            <form id="formAjoutStatistique" method="POST">
+                <h1>Ajouter des statistiques</h1>
+                <label for="type-lancer">Type de lancer :</label>
+                <select name="type_lancer" id="type-lancer">
+                    <option value="Placement">Placement</option>
+                    <option value="Sortie">Sortie</option>
+                    <option value="Raise">Raise</option>
+                    <option value="Garde">Garde</option>
+                    <option value="Double sortie">Double sortie</option>
+                    <option value="Placement gelé">Placement gelé</option>
+                </select>
 
-    <p id="joueur-selectionne">Joueur : </p>
-    </select>
+                <label for="note">Note (1-4) :</label>
+                <input type="number" name="note" id="note" min="1" max="4" required>
+                <button type="submit" class="btn">Ajouter</button>
+            </form>
+        </div>
 
-    <label for="type-lancer">Type de lancer :</label>
-    <select id="type-lancer" name="type_lancer" required>
-      <!-- Ces options seront remplies dynamiquement par JS -->
-    </select>
-
-    <label for="note">Note (1 à 4) :</label>
-    <input type="number" min="1" max="4" name="note" id="note" required>
-
-    <button type="submit" class="btn">Ajouter la statistique</button>
-  </form>
-</div>
-
-
-        <canvas id="statsChart"></canvas>
     </main>
+
+
+    <script>
+    // AJAX pour créer une équipe
+    document.getElementById('formCreationEquipe').addEventListener('submit', function(event) {
+        event.preventDefault();  // Empêche le formulaire de se soumettre normalement
+        const formData = new FormData(this);  // Récupère toutes les données du formulaire
+        formData.append('action', 'creerEquipe');  // Ajoute l'action pour le traitement côté PHP
+
+        // Envoie la requête avec fetch
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur de serveur : ' + response.statusText);
+            }
+            return response.json();  // Tente de parser la réponse JSON
+        }).then(data => {
+            console.log('Réponse du serveur :', data);
+            if (data.status === 'success') {
+                alert(data.message);  // Affiche un message de succès
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        }).catch(error => {
+            console.error('Erreur lors de la requête fetch:', error);
+        });
+    });
+
+    // AJAX pour ajouter des statistiques
+    document.getElementById('formAjoutStatistique').addEventListener('submit', function(event) {
+        event.preventDefault();  // Empêche le formulaire de se soumettre normalement
+        const formData = new FormData(this);  // Récupère toutes les données du formulaire
+        formData.append('action', 'ajouterStatistique');  // Ajoute l'action pour le traitement côté PHP
+
+        // Envoie la requête avec fetch
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur de serveur : ' + response.statusText);
+            }
+            return response.json();  // Tente de parser la réponse JSON
+        }).then(data => {
+            console.log('Réponse du serveur :', data);
+            if (data.status === 'success') {
+                alert(data.message);  // Affiche un message de succès
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        }).catch(error => {
+            console.error('Erreur lors de la requête fetch:', error);
+        });
+    });
+</script>
+
 </body>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="./JS/ScriptGraphique.js"></script>
+
 </html>
