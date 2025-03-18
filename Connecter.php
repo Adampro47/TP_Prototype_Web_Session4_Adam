@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 // Inclure le fichier de gestion des données
 include('data.php');
 
-// Obtenir les données de l'équipe et les statistiques (si nécessaire)
+// Obtenir les données de l'équipe et les statistiques
 $monEquipeJoueur = obtenirEquipe();
 $monEquipe = obtenirStatistiques();
 ?>
@@ -20,13 +20,15 @@ $monEquipe = obtenirStatistiques();
 <body>  
     <main>
         <h2>Statistiques générales</h2>
-        <p>Comparez ou affichez une seule catégorie.</p>
+        
         <header>
             <button id="creerEquipe" onclick="ouvrirFormulaireCreationEquipe()">Créer une équipe</button>
             <button id="AjouterStatistique" >Ajouter des statistiques à son équipe</button>
             <button id="VoirStatistique" onclick="ouvrirFormulaireCreationEquipe()">Voir les statistiques de son équipe</button>
         </header>
-        ---
+        <h2></h2>
+        <p>Comparez ou affichez une seule catégorie.</p>
+
         <button id="toggle-mode">Passer en mode Affichage</button>
         
         <div id="comparison-mode">
@@ -69,6 +71,16 @@ $monEquipe = obtenirStatistiques();
                 <input type="text" placeholder="Nom du Troisième" name="Troisieme" id="Troisieme" required>
                 <label for="Quatrième"><b>Quatrième</b></label>
                 <input type="text" placeholder="Nom du Quatrième" name="Quatrième" id="Quatrième" required>
+                <label for="categorieEquipe">Choisir la catégorie de l'équipe</label>
+                <ul id="selectListCategorieDeEquipe">
+                    <li><select name="select_Equipe" class="select-item">
+                        <option value="u15">U15</option>
+                        <option value="u18-garcons">U18 Garçons</option>
+                        <option value="u18-filles">U18 Filles</option>
+                        <option value="u20-garcons">U20 Garçons</option>
+                        <option value="u20-filles">U20 Filles</option>
+                    </select></li>
+                </ul>
                 <button type="submit" class="btn">Créer l'équipe</button>
             </form>
         </div>
@@ -152,7 +164,6 @@ $monEquipe = obtenirStatistiques();
     });
         // Creer équipe
     document.getElementById('formCreationEquipe').addEventListener('submit', function(event) {
-        alert("Essaye creation");
         event.preventDefault(); 
         const formData = new FormData(this);
         formData.append('action', 'creerEquipe'); 

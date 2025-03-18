@@ -40,7 +40,7 @@ const statsData = {
         "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
     }
 };
-alert(document.getElementById('statsChart'));
+
 const ctx = document.getElementById('statsChart').getContext('2d');
 var statsChart = new Chart(ctx, {
     type: 'bar',
@@ -124,7 +124,6 @@ function ouvrirFormulaireChoixDuJoueur(premier,deuxieme,troisieme,quatrieme) {
     select.children[2].textContent = troisieme;
     select.children[3].textContent = quatrieme;
     document.getElementById("FormulaireChoixDuJoueur").style.display = "block";
-
 }
 function addNewSelect(selectElement) {
     const selectList = document.getElementById('selectList');

@@ -1,4 +1,14 @@
 <?php
+$statsData = [
+    "u20-garcons" => [
+        "Placement" => [4, 4, 3, 3, 4, 4, 3, 4, 3, 4],
+        "Sortie" => [3, 4, 4, 4, 3, 3, 2, 4, 3, 3],
+        "Raise" => [4, 4, 3, 3, 3, 4, 3, 4, 3, 3],
+        "Garde" => [3, 3, 4, 3, 4, 4, 3, 4, 3, 3],
+        "Double sortie" => [3, 3, 4, 3, 4, 3, 4, 3, 2, 4],
+        "Placement gelé" => [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
+    ]
+];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -21,7 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $deuxieme = $_POST['Deuxieme'];
             $troisieme = $_POST['Troisieme'];
             $quatrieme = $_POST['Quatrième'];
-            echo json_encode(['status' => 'success', 'message' => 'Équipe créée avec succès!'.$premier.''.$deuxieme.''.$troisieme.''.$quatrieme.'']);
+            $equipe = $_POST['select_Equipe'];
+
+            $post_string = http_build_query($_POST);
+            /*echo json_encode(['status' => 'success', 'message' => $post_string]);*/
+            echo json_encode(['status' => 'success', 'message' => 'Équipe créée avec succès!'.$premier.''.$deuxieme.''.$troisieme.''.$quatrieme.''.$equipe.'']);
         } 
         elseif ($action == 'ajouterStatistique') {
             $statistiques = [];

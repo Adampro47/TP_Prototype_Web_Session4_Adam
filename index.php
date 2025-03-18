@@ -6,15 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CurlStat</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="./JS/ScriptGraphique.js"></script>
-</head>
-<body>
 
-<button class="open-button" id=boutonOuvrirConnexion onclick="ouvrirFormulaireConnexion()">Connexion</button>
-<button class="open-button" id=boutonOuvrirCreation onclick="ouvrirFormulaireCreation()">Création</button>
+</head>
+
+<body>
+    <h1>
+    <button class="open-button" id=boutonOuvrirConnexion onclick="ouvrirFormulaireConnexion()">Connexion</button>
+    <button class="open-button" id=boutonOuvrirCreation onclick="ouvrirFormulaireCreation()">Création</button>
+    </h1>
 <button id="toggle-mode">Passer en mode Affichage</button>
- 
+ <h2>Catégories</h2>
  <div id="comparison-mode">
      <select id="niveau-select-1">
          <option value="u15">U15</option>
@@ -72,5 +73,8 @@
         <button type="button" class="btn cancel" onclick="AjouterCompte()">Créer</button>
     </form>
 </div>
+<canvas id="statsChart"></canvas>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="./JS/ScriptGraphique.js"></script>
 </html>
