@@ -71,9 +71,18 @@ function updateChart() {
     if (comparisonMode) {
         const niveau1 = document.getElementById('niveau-select-1').value;
         const niveau2 = document.getElementById('niveau-select-2').value;
-        const stats1 = statsData[niveau1];
-        const stats2 = statsData[niveau2];
+        let stats1;
+        if (niveau1 === 'mon-equipe'){
+            stats1 = obtenirStatMonEquipe();
+        }
+        else{
+            stats1 = statsData[niveau1];}
+
+        alert(stats1);
         
+        
+        const stats2 = statsData[niveau2];
+        alert(stats2)
         const moyennes1 = Object.values(stats1).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
         const moyennes2 = Object.values(stats2).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
         
@@ -92,7 +101,31 @@ function updateChart() {
     }
     statsChart.update();
 }
-
+function obtenirStatMonEquipe(){
+        alert('DansObtenirStatMonEquipe');
+        const formData = new FormData();
+        formData.append('action', 'obtenirStatMonEquipe');
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur de serveur : ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Réponse du serveur :', data);
+            if (data.status === 'success') {
+                alert(data.stats['Placement']);
+                return data.stats;
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        }).catch(error => {
+            console.error('Erreur lors de la requête fetch:', error);
+        });
+    ;
+}
 document.getElementById('toggle-mode').addEventListener('click', toggleMode);
 document.getElementById('niveau-select-1').addEventListener('change', updateChart);
 document.getElementById('niveau-select-2').addEventListener('change', updateChart);

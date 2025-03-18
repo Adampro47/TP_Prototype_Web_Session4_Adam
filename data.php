@@ -1,13 +1,11 @@
 <?php
 $statsData = [
-    "u20-garcons" => [
-        "Placement" => [4, 4, 3, 3, 4, 4, 3, 4, 3, 4],
+        "Placement" => [0, 0, 0, 3, 4, 4, 3, 4, 3, 4],
         "Sortie" => [3, 4, 4, 4, 3, 3, 2, 4, 3, 3],
         "Raise" => [4, 4, 3, 3, 3, 4, 3, 4, 3, 3],
         "Garde" => [3, 3, 4, 3, 4, 4, 3, 4, 3, 3],
         "Double sortie" => [3, 3, 4, 3, 4, 3, 4, 3, 2, 4],
         "Placement gelé" => [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
-    ]
 ];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -58,7 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $q = 't4';
             echo json_encode(['status' => 'success', 'premier' => $p,'deuxieme' => $d,'troisieme' => $t,'quatrieme' => $q]);
         }
-
+        elseif ($action == 'obtenirStatMonEquipe') {
+            echo json_encode(['status' => 'success', 'stats' => $statsData]);
+        }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
     }
