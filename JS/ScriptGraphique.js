@@ -148,7 +148,9 @@ function ouvrirFormulaireAjoutStatistique(joueur) {
     document.textContent = joueur;
     console.log(joueur)
 }
-
+function fermerFormulaireAjoutStatistique() {
+    document.getElementById("FormulaireAjoutStatistique").style.display = "none";
+}
 
 function ouvrirFormulaireChoixDuJoueur(premier,deuxieme,troisieme,quatrieme) {
     const select = document.getElementById("JoueurChoisi");

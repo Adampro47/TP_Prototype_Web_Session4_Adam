@@ -1,4 +1,60 @@
 <?php
+// Paramètres de connexion à la base de données
+$servername = "127.0.0.1";
+$username = "bedardh25techinf_visiteur";
+$password = "curl_stat";
+$dbname = "bedardh25techinf_Curl_stat";
+
+function getStatsByCategory($categoryId) {
+    global $servername, $username, $password, $dbname;
+
+    try {
+        // Créer une connexion PDO
+        $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // Requête SQL pour récupérer les données par catégorie
+        $sql = "
+            SELECT tdl.nom AS type_de_lancer, s.valeur
+            FROM stats s
+            JOIN type_de_lancer tdl ON s.type_de_lancer_id = tdl.id
+            WHERE s.category_id = :category_id
+            ORDER BY tdl.nom, s.indice;
+        ";
+
+        // Préparer et exécuter la requête
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':category_id', $categoryId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Initialiser un tableau pour stocker les résultats
+        $data = [];
+
+        // Récupérer les données et les organiser dans un format spécifique
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $typeDeLancer = $row['type_de_lancer'];
+            $valeur = $row['valeur'];
+
+            // Ajouter les valeurs à un tableau multidimensionnel
+            if (!isset($data[$typeDeLancer])) {
+                $data[$typeDeLancer] = [];
+            }
+
+            $data[$typeDeLancer][] = $valeur;
+        }
+
+        // Fermer la connexion
+        $conn = null;
+
+        // Retourner le tableau formaté en JSON
+        return json_encode($data);
+
+    } catch (PDOException $e) {
+        // Gérer les erreurs de connexion ou de requête
+        return json_encode(["error" => "Erreur : " . $e->getMessage()]);
+    }
+}
+////////////////////////////
 $statsData = [
         "Placement" => [0, 0, 0, 3, 4, 4, 3, 4, 3, 4],
         "Sortie" => [3, 4, 4, 4, 3, 3, 2, 4, 3, 3],
@@ -58,6 +114,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         elseif ($action == 'obtenirStatMonEquipe') {
             echo json_encode(['status' => 'success', 'stats' => $statsData]);
+        }
+        elseif ($action == 'obtenirStatCategorie') {
+            $equipe = $_POST['select_Equipe2'];
+            echo json_encode(['status' => 'success', 'stat' => $equipe]);
+            /*$statistiques = getStatsByCategory($_POST['select_Equipe2']);
+            echo json_encode(['status' => 'success', 'stat' => $statistiques]);*/
         }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
