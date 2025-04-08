@@ -1,0 +1,5 @@
+[10-Apr-2024 17:20:07 UTC] PHP Parse error:  syntax error, unexpected token "}", expecting "," or ";" in /home/claude/public_html/mail/index.php on line 14
+[10-Apr-2024 18:09:07 UTC] PHP Parse error:  syntax error, unexpected double-quoted string "claude.boutet@cegepat.qc.ca" in /home/claude/public_html/mail/index.php on line 9
+[10-Apr-2024 18:18:01 UTC] PHP Warning:  session_start(): Session cannot be started after headers have already been sent in /home/claude/public_html/mail/index.php on line 12
+[10-Apr-2024 18:18:47 UTC] PHP Warning:  session_start(): Session cannot be started after headers have already been sent in /home/claude/public_html/mail/index.php on line 12
+[10-Apr-2024 18:20:17 UTC] PHP Warning:  session_start(): Session cannot be started after headers have already been sent in /home/claude/public_html/mail/index.php on line 12
