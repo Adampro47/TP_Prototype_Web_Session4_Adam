@@ -1,52 +1,70 @@
 <?php
+
 // 8192794516@msg.telus.com
 //require_once 'env.php';
 
 // $destinataire = "claude.boutet@cegepat.qc.ca";
 // $destinataire = getenv("SMS");
-function EnvoyerCode($numer0_destinataire){
-    //$destinataire = "8192794516@msg.telus.com";
-    error_log($numer0_destinataire);
-    $destinataire = $numer0_destinataire.'@msg.telus.com';
-    error_log($destinataire);
-    $code = rand(100000,999999);
 
+function EnvoyerCode($adresse_destinataire){
+    //$destinataire = "8192794516@msg.telus.com";
+    $code = rand(100000,999999);
+    putenv("CODE=$code");
+    
+    // Démarre la session avant d'utiliser $_SESSION
     session_start();
+    
+    // Stocke le code dans la session
     $_SESSION['code'] = $code;
 
-    if (envoyerMail($destinataire, "Votre code est : ".$code)) {
-        //echo "<p>Message envoyé à ". $destinataire."</p>";
+    if (envoyerMail($adresse_destinataire, "Votre code est : ".$code)) {
         return $code;
-    } 
-    else {
-        //echo "<p>Message non envoyé à ". $destinataire."</p>";
+    } else {
         return null;
     }
-    
 }
-function envoyerMail($to, $message) {
-     $subject = 'Code de vérification';
-     $headers = 
-     'From: bedardh25@techinfo420.ca' . "\r\n" .
-     'X-Mailer: PHP/' . phpversion();
 
-     return mail($to, $subject, $message, $headers);    
+function envoyerMail($to, $message) {
+    $subject = 'Code de vérification';
+    $headers = 
+    'From: bedardh25@techinfo420.ca' . "\r\n" .
+    'X-Mailer: PHP/' . phpversion();
+
+    return mail($to, $subject, $message, $headers);    
 }
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action'])) {
         $action = $_POST['action'];
         if ($action == 'EnvoyerCode') {
-            $telephone = $_POST['telephone'];
-            error_log($telephone);
-            $code = EnvoyerCode($telephone);
-            if ($code != null) {
-                echo json_encode(['status' => 'success', 'code' => $code]);
+            $telephone = $_POST['email'];
+            $creer_code = EnvoyerCode($telephone);
+
+            // Log seulement si $creer_code n'est pas null
+            if ($creer_code !== null) {
+                echo json_encode(['status' => 'success', 'code' => $creer_code]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Le code n\'a pas été envoyé']);
             }
-            else {
-                $post_string = http_build_query($_POST);
-                echo json_encode(['status' => 'error', 'message' => 'le code a pas envoyer']);
+        }
+        elseif ($action == 'VerifierCode') {
+            $code_entree = $_POST['code'];
+
+            // Vérifier que la session est démarrée et que le code existe
+            session_start();
+            if (isset($_SESSION['code'])) {
+                $code = $_SESSION['code'];
+                error_log("Code reçu: " . $code_entree);
+                error_log("Code stocké: " . $code);
+                if ($code_entree == $code) {
+                    echo json_encode(['status' => 'success']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Mauvais code']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Code non trouvé']);
             }
-        } 
+        }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
     }

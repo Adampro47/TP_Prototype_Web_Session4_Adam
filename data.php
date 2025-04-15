@@ -5,6 +5,22 @@ $username = "bedardh25techinf_visiteur";
 $password = "curl_stat";
 $dbname = "bedardh25techinf_Curl_stat";
 
+function insertUtilisateur($email,$mot_de_passe){
+    try {
+    
+        $maConnexionPDO = getConnexionBd();
+        $pdoRequete = $maConnexionPDO->prepare("INSERT INTO users (email, mot_de_passe) VALUES('$email','$mot_de_passe');");
+
+        $pdoRequete->bindParam(":id",$id,PDO::PARAM_INT);
+    
+        $pdoRequete->execute();
+
+        return $pdoRequete->fetch(PDO::FETCH_OBJ);
+
+    } catch (Exception $e) {
+        error_log("Exception pdo: ".$e->getMessage());
+    }
+}
 function getStatsByCategory($categoryId) {
     global $servername, $username, $password, $dbname;
 
@@ -98,7 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $statistiques[] = $value;
                 }
             }
-
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Statistiques ajoutées',
@@ -120,6 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(['status' => 'success', 'stat' => $equipe]);
             /*$statistiques = getStatsByCategory($_POST['select_Equipe2']);
             echo json_encode(['status' => 'success', 'stat' => $statistiques]);*/
+        }
+        elseif ($action == 'creerUtilisateur') {
+            $email = $_POST['email'];
+            $mot_de_passe = $_POST['mot_de_passe'];
+            insertUtilisateur($email,$mot_de_passe);
+            echo json_encode(['status' => 'success', 'stat' => $equipe]);
         }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);

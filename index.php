@@ -67,8 +67,8 @@
         <label for="emailCreation"><b>Email</b></label>
         <input type="text" placeholder="Entrez l'email" name="email" id="emailCreation" required>
 
-        <label for="numeroTel"><b>Téléphone</b></label>
-        <input type="text" placeholder="Entrez le numéro" name="telephone" id="telephonecreation" required>
+        <!-- <label for="numeroTel"><b>Téléphone</b></label>
+        <input type="text" placeholder="Entrez le numéro" name="telephone" id="telephonecreation" required> -->
 
         <label for="pswCreation"><b>Mot de passe</b></label>
         <input type="password" placeholder="Entrez votre mot de passe" name="psw" id="pswCreation" required>
@@ -77,14 +77,14 @@
     </form>
 </div>
 
-<div class="form-popup" id="Verifier2FA_tel">
-    <form action="Connecter.php" method="post" id="Verifier2FA_tel" class="form-container">
+<div class="form-popup" id="Verifier2FA">
+    <form action="Connecter.php" method="post" id="Verifier2FA" class="form-container">
         <h1>Verifier le code</h1>
 
-        <label for="telephone"><b>Code</b></label>
-        <input type="text" placeholder="Entrez le code" name="code" id="telephone" required>
+        <label for="code2fa"><b>Code</b></label>
+        <input type="text" placeholder="Entrez le code" name="code2fa" id="code2fa" required>
 
-        <button type="button" class="btn cancel" onclick="AjouterCompte()">Créer</button>
+        <button type="button" class="btn cancel" onclick="VerifierCode()">Vérifier</button>
     </form>
 </div>
 
