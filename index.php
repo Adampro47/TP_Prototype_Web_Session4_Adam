@@ -61,11 +61,11 @@
 </div>
 
 <div class="form-popup" id="FormulaireCreation">
-    <form action="Connecter.php" method="post" id="formulaireCreation" class="form-container">
+    <form id="formulaireCreation" class="form-container">
         <h1>Creer un compte</h1>
 
         <label for="emailCreation"><b>Email</b></label>
-        <input type="text" placeholder="Entrez l'email" name="email" id="emailCreation" required>
+        <input type="text" placeholder="Entrez l'email" name="email" id="emailCreation" value="2369778@cegepat.qc.ca" required>
 
         <!-- <label for="numeroTel"><b>Téléphone</b></label>
         <input type="text" placeholder="Entrez le numéro" name="telephone" id="telephonecreation" required> -->
@@ -73,18 +73,18 @@
         <label for="pswCreation"><b>Mot de passe</b></label>
         <input type="password" placeholder="Entrez votre mot de passe" name="psw" id="pswCreation" required>
 
-        <button type="button" class="btn cancel" onclick="AjouterCompte()">Créer</button>
+        <input type="button" class="btn cancel" onclick="AjouterCompte()" value="Créer">
     </form>
 </div>
 
-<div class="form-popup" id="Verifier2FA">
-    <form action="Connecter.php" method="post" id="Verifier2FA" class="form-container">
+<div class="form-popup" id="FormulaireVerifier2FA">
+    <form onsubmit="VerifierCode(event)" id="Verifier2FA" class="form-container">
         <h1>Verifier le code</h1>
 
         <label for="code2fa"><b>Code</b></label>
         <input type="text" placeholder="Entrez le code" name="code2fa" id="code2fa" required>
 
-        <button type="button" class="btn cancel" onclick="VerifierCode()">Vérifier</button>
+        <input type="button" class="btn cancel" onclick="VerifierCode(event)" value="Vérifier">
     </form>
 </div>
 

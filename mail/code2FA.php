@@ -9,7 +9,6 @@
 function EnvoyerCode($adresse_destinataire){
     //$destinataire = "8192794516@msg.telus.com";
     $code = rand(100000,999999);
-    putenv("CODE=$code");
     
     // Démarre la session avant d'utiliser $_SESSION
     session_start();
@@ -35,22 +34,20 @@ function envoyerMail($to, $message) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action'])) {
-        $action = $_POST['action'];
+        $action = filter_input(INPUT_POST,"action",FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         if ($action == 'EnvoyerCode') {
-            $telephone = $_POST['email'];
-            $creer_code = EnvoyerCode($telephone);
-
+            $mail = filter_input(INPUT_POST,"email",FILTER_VALIDATE_EMAIL);
+            $creer_code = EnvoyerCode($mail);
+            error_log("code".$creer_code);
             // Log seulement si $creer_code n'est pas null
             if ($creer_code !== null) {
-                echo json_encode(['status' => 'success', 'code' => $creer_code]);
+                echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Le code n\'a pas été envoyé']);
             }
         }
         elseif ($action == 'VerifierCode') {
             $code_entree = $_POST['code'];
-
-            // Vérifier que la session est démarrée et que le code existe
             session_start();
             if (isset($_SESSION['code'])) {
                 $code = $_SESSION['code'];

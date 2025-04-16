@@ -27,7 +27,11 @@ function VerifierConnexion() {
 }
 function AjouterCompte() {
     var email = document.getElementById("emailCreation").value; 
-    var mdp = document.getElementById("pswCreation").value;      
+    var mdp = document.getElementById("pswCreation").value;
+    if (mdp == ""){
+        alert("Il faut un mot de passe");
+        return;
+    }
     //var telephone = document.getElementById("telephonecreation").value; 
     //alert(telephone);     
     if (connexion[email] != undefined) {
@@ -43,8 +47,14 @@ function AjouterCompte() {
         alert("code null");
         return;
     }
-    document.getElementById("Verifier2FA").style.display = "block";
+    if (code = false){
+        alert("code null2");
+        return;
+    }
+    document.getElementById("FormulaireCreation").style.display = "none"; 
+    document.getElementById("FormulaireVerifier2FA").style.display = "block";
 }
+
 function EnvoyerCode(email) {  
         const formData = new FormData();
         formData.append('action', 'EnvoyerCode');
@@ -58,11 +68,11 @@ function EnvoyerCode(email) {
             if (!response.ok) {
                 throw new Error('Erreur de serveur : ' + response.statusText);
             }
-            return response.json();
         }).then(data => {
             console.log('Réponse du serveur :', data);
             if (data.status === 'success') {
-                console.log(data.code);
+                alert("code envoyer");
+                return true;
             } else {
                 alert('Erreur : ' + data.message);
             }
@@ -70,7 +80,9 @@ function EnvoyerCode(email) {
             console.error('Erreur lors de la requête fetch:', error);
         });
 }
-function VerifierCode() {
+
+function VerifierCode(event) {
+        event.preventDefault();
         alert("VerifierCode");
         var code = document.getElementById("code2fa").value; 
         const formData = new FormData();
@@ -88,8 +100,8 @@ function VerifierCode() {
         }).then(data => {
             console.log('Réponse du serveur :', data);
             if (data.status === 'success') {
-                alert("OK");
-                document.getElementById("Verifier2FA").style.display = "none";
+                window.location.href = "Connecter.php";
+                document.getElementById("FormulaireVerifier2FA").style.display = "none";
                 document.getElementById("FormulaireCreation").style.display = "none";
             } else {
                 alert('Erreur : ' + data.message);
@@ -99,12 +111,14 @@ function VerifierCode() {
             console.error('Erreur lors de la requête fetch:', error);
         });
 }
+
 function AjouterCompteBD() {
     var email = document.getElementById("emailCreation").value; 
     var mdp = document.getElementById("pswCreation").value;
     const formData = new FormData();
-    formData.append('action', 'EnvoyerCode');
+    formData.append('action', 'AjouterCompteBD');
     formData.append('mot_de_passe', mdp);
+    formData.append('email', email);
     console.log(formData[email]);
     fetch('./data.php', {
         method: 'POST',
