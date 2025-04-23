@@ -11,6 +11,7 @@ function EnvoyerCode($adresse_destinataire){
     $code = rand(100000,999999);
     
     // Démarre la session avant d'utiliser $_SESSION
+    session_name('SessionCreationDeCompte');
     session_start();
     
     // Stocke le code dans la session
@@ -38,10 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($action == 'EnvoyerCode') {
             $mail = filter_input(INPUT_POST,"email",FILTER_VALIDATE_EMAIL);
             $creer_code = EnvoyerCode($mail);
-            error_log("code".$creer_code);
-            // Log seulement si $creer_code n'est pas null
-            if ($creer_code !== null) {
-                echo json_encode(['status' => 'success']);
+            if ($creer_code != null) {
+                echo json_encode(['status' => 'success','message' => 'Code envoyer']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Le code n\'a pas été envoyé']);
             }
@@ -51,8 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             session_start();
             if (isset($_SESSION['code'])) {
                 $code = $_SESSION['code'];
-                error_log("Code reçu: " . $code_entree);
-                error_log("Code stocké: " . $code);
                 if ($code_entree == $code) {
                     echo json_encode(['status' => 'success']);
                 } else {

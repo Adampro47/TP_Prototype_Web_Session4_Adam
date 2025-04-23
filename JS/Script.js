@@ -1,8 +1,5 @@
-var connexion = {
-    "email@test.test":"Test",
-    "test@email.test":"Test2",
-    "a":"a"
-}
+let emailTemp = "";
+let mdpTemp = "";
 function ouvrirFormulaireConnexion() {
     document.getElementById("FormulaireConnexion").style.display = "block";
     document.getElementById("FormulaireCreation").style.display = "none"; 
@@ -11,6 +8,10 @@ function ouvrirFormulaireCreation() {
     document.getElementById("FormulaireCreation").style.display = "block";
     document.getElementById("FormulaireConnexion").style.display = "none"; 
 }
+
+//////////////////////////////////////////////////////////////////
+// Verification si le compte auquel je veux me connecter existe
+//////////////////////////////////////////////////////////////////
 
 function VerifierConnexion() {
     var email = document.getElementById("email").value;
@@ -25,6 +26,67 @@ function VerifierConnexion() {
         alert("Email non trouver");
     }
 }
+
+
+////////////////////////////////////
+// Partie pour la 2FA
+////////////////////////////////////
+
+
+function EnvoyerCode(email) {  
+    const formData = new FormData();
+    formData.append('action', 'EnvoyerCode');
+    formData.append('email', email);
+    fetch('./mail/code2FA.php', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    }).then(data => {
+        if (data.status === 'success') {
+            return true;
+        }
+    }).catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });
+}
+
+function VerifierCode(event) {
+    event.preventDefault();
+    var code = document.getElementById("code2fa").value; 
+    const formData = new FormData();
+    formData.append('code', code);
+    formData.append('action', 'VerifierCode');
+    fetch('./mail/code2FA.php', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    }).then(data => {
+        if (data.status === 'success') {
+            AjouterCompteBD();
+            window.location.href = "Connecter.php";
+            document.getElementById("FormulaireVerifier2FA").style.display = "none";
+            document.getElementById("FormulaireCreation").style.display = "none";
+        }
+    }).catch(error => {
+        
+        console.error('Erreur lors de la requête fetch:', error);
+    });
+}
+
+
+
+////////////////////////////////////
+// Partie pour la création du compte
+////////////////////////////////////
+
 function AjouterCompte() {
     var email = document.getElementById("emailCreation").value; 
     var mdp = document.getElementById("pswCreation").value;
@@ -34,92 +96,20 @@ function AjouterCompte() {
     }
     //var telephone = document.getElementById("telephonecreation").value; 
     //alert(telephone);     
-    if (connexion[email] != undefined) {
-        alert("Email déjà utilisé");
-    } 
-    else {
-        connexion[email] = mdp;
-    }
-    document.getElementById("emailCreation").value = ""; 
-    document.getElementById("pswCreation").value = "";  
-    var code = EnvoyerCode(email);
-    if (code = null){
-        alert("code null");
-        return;
-    }
-    if (code = false){
-        alert("code null2");
-        return;
-    }
+    emailTemp = email;
+    mdpTemp = mdp;
+    EnvoyerCode(email);
     document.getElementById("FormulaireCreation").style.display = "none"; 
     document.getElementById("FormulaireVerifier2FA").style.display = "block";
 }
 
-function EnvoyerCode(email) {  
-        const formData = new FormData();
-        formData.append('action', 'EnvoyerCode');
-        formData.append('email', email);
-        console.log(formData[email]);
-        fetch('./mail/code2FA.php', {
-            method: 'POST',
-            body: formData
-        
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
-        }).then(data => {
-            console.log('Réponse du serveur :', data);
-            if (data.status === 'success') {
-                alert("code envoyer");
-                return true;
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de la requête fetch:', error);
-        });
-}
-
-function VerifierCode(event) {
-        event.preventDefault();
-        alert("VerifierCode");
-        var code = document.getElementById("code2fa").value; 
-        const formData = new FormData();
-        formData.append('code', code);
-        formData.append('action', 'VerifierCode');
-        console.log(formData[code]);
-        fetch('./mail/code2FA.php', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
-            return response.json();
-        }).then(data => {
-            console.log('Réponse du serveur :', data);
-            if (data.status === 'success') {
-                window.location.href = "Connecter.php";
-                document.getElementById("FormulaireVerifier2FA").style.display = "none";
-                document.getElementById("FormulaireCreation").style.display = "none";
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            
-            console.error('Erreur lors de la requête fetch:', error);
-        });
-}
-
 function AjouterCompteBD() {
-    var email = document.getElementById("emailCreation").value; 
-    var mdp = document.getElementById("pswCreation").value;
     const formData = new FormData();
     formData.append('action', 'AjouterCompteBD');
-    formData.append('mot_de_passe', mdp);
-    formData.append('email', email);
-    console.log(formData[email]);
+    formData.append('mot_de_passe', mdpTemp);
+    formData.append('email', emailTemp);
+    mdpTemp = "";
+    emailTemp = "";
     fetch('./data.php', {
         method: 'POST',
         body: formData
@@ -136,7 +126,6 @@ function AjouterCompteBD() {
             alert('Erreur : ' + data.message);
         }
     }).catch(error => {
-        
         console.error('Erreur lors de la requête fetch:', error);
     });
 }

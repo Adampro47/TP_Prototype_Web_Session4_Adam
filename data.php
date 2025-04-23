@@ -1,26 +1,48 @@
 <?php
+header('Content-Type: application/json');
 // Paramètres de connexion à la base de données
 $servername = "127.0.0.1";
 $username = "bedardh25techinf_visiteur";
+$usernameCreation = "bedardh25techinf_user_creation";
 $password = "curl_stat";
+$passwordCreation = "curl_stat_Creation";
 $dbname = "bedardh25techinf_Curl_stat";
 
-function insertUtilisateur($email,$mot_de_passe){
-    try {
-    
-        $maConnexionPDO = getConnexionBd();
-        $pdoRequete = $maConnexionPDO->prepare("INSERT INTO users (email, mot_de_passe) VALUES('$email','$mot_de_passe');");
 
-        $pdoRequete->bindParam(":id",$id,PDO::PARAM_INT);
-    
-        $pdoRequete->execute();
-
-        return $pdoRequete->fetch(PDO::FETCH_OBJ);
-
-    } catch (Exception $e) {
-        error_log("Exception pdo: ".$e->getMessage());
-    }
+function getConnexionBd() {
+    global $servername, $username, $password, $dbname;
+    return new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
 }
+function getConnexionBdCreation() {
+    global $servername, $usernameCreation, $passwordCreation, $dbname;
+    return new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $usernameCreation, $passwordCreation, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+}
+function insertUtilisateur($email, $mot_de_passe) {
+    try {
+        $hashedPassword = password_hash($mot_de_passe, PASSWORD_DEFAULT);
+        $maConnexionPDO = getConnexionBdCreation();
+
+        $pdoRequete = $maConnexionPDO->prepare("
+            INSERT INTO utilisateurs (email, mot_de_passe)
+            VALUES (:email, :mot_de_passe)
+        ");
+
+        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
+        $pdoRequete->bindParam(':mot_de_passe', $hashedPassword, PDO::PARAM_STR);
+
+        $pdoRequete->execute();
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        exit;
+    }    
+}
+
 function getStatsByCategory($categoryId) {
     global $servername, $username, $password, $dbname;
 
@@ -136,11 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             /*$statistiques = getStatsByCategory($_POST['select_Equipe2']);
             echo json_encode(['status' => 'success', 'stat' => $statistiques]);*/
         }
-        elseif ($action == 'creerUtilisateur') {
+        elseif ($action == 'AjouterCompteBD') {
+            
             $email = $_POST['email'];
             $mot_de_passe = $_POST['mot_de_passe'];
             insertUtilisateur($email,$mot_de_passe);
-            echo json_encode(['status' => 'success', 'stat' => $equipe]);
+            echo json_encode(['status' => 'success']);
         }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
