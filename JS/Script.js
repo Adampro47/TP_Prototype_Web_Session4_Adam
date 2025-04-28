@@ -14,18 +14,40 @@ function ouvrirFormulaireCreation() {
 //////////////////////////////////////////////////////////////////
 
 function VerifierConnexion() {
-    var email = document.getElementById("email").value;
-    var mdp = document.getElementById("psw").value;
+    const email = document.getElementById('email').value;
+    const mot_de_passe = document.getElementById('psw').value;
 
-    if (connexion[email] != undefined) {
-        if (mdp == connexion[email]){
-            window.location.href = "Connecter.php";
-        } else {alert("Mot de passe incorrect");}
+    const formData = new FormData();
+    formData.append('action', 'verifierConnexion');
+    formData.append('email', email);
+    formData.append('mot_de_passe', mot_de_passe);
 
-    } else {
-        alert("Email non trouver");
-    }
+    fetch('./data.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Réponse du serveur :', data);
+        if (data.status === 'success') {
+            // Demander la vérification 2FA
+            EnvoyerCode(email);
+            document.getElementById('FormulaireConnexion').style.display = 'none';
+            document.getElementById('FormulaireVerifier2FAConnexion').style.display = 'block';
+        } else {
+            alert('Erreur de connexion : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });
 }
+
 
 
 ////////////////////////////////////
@@ -72,8 +94,9 @@ function VerifierCode(event) {
         if (data.status === 'success') {
             AjouterCompteBD();
             window.location.href = "Connecter.php";
-            document.getElementById("FormulaireVerifier2FA").style.display = "none";
-            document.getElementById("FormulaireCreation").style.display = "none";
+        }
+        else {
+            alert('Erreur de connexion : ' + data.message);
         }
     }).catch(error => {
         
@@ -81,7 +104,32 @@ function VerifierCode(event) {
     });
 }
 
-
+function VerifierCodeConnexion(event) {
+    event.preventDefault();
+    var code = document.getElementById("code2faConnexion").value; 
+    const formData = new FormData();
+    formData.append('code', code);
+    formData.append('action', 'VerifierCode');
+    fetch('./mail/code2FA.php', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    }).then(data => {
+        if (data.status === 'success') {
+            window.location.href = "Connecter.php";
+        }
+        else {
+            alert('Erreur de connexion : ' + data.message);
+        }
+    }).catch(error => {
+        
+        console.error('Erreur lors de la requête fetch:', error);
+    });
+}
 
 ////////////////////////////////////
 // Partie pour la création du compte
@@ -98,6 +146,10 @@ function AjouterCompte() {
     //alert(telephone);     
     emailTemp = email;
     mdpTemp = mdp;
+    emailValide = VerifierEmail();
+    if (!emailValide) {
+        return;
+    }
     EnvoyerCode(email);
     document.getElementById("FormulaireCreation").style.display = "none"; 
     document.getElementById("FormulaireVerifier2FA").style.display = "block";
@@ -121,9 +173,34 @@ function AjouterCompteBD() {
     }).then(data => {
         console.log('Réponse du serveur :', data);
         if (data.status === 'success') {
-            alert("Le compte à été créer avec succès");
         } else {
             alert('Erreur : ' + data.message);
+        }
+    }).catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });
+}
+
+function VerifierEmail() {
+    var email = document.getElementById("emailCreation").value; 
+    const formData = new FormData();
+    formData.append('action', 'verifierEmail');
+    formData.append('email', email);
+    fetch('./data.php', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    }).then(data => {
+        console.log('Réponse du serveur :', data);
+        if (data.status === 'success') {
+            return true;
+        } else {
+            alert('Erreur : ' + data.message);
+            return false;
         }
     }).catch(error => {
         console.error('Erreur lors de la requête fetch:', error);

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="./CSS/style.css">
     <script src="./JS/Script.js"></script>
     <meta charset="UTF-8">
@@ -85,6 +86,17 @@
         <input type="text" placeholder="Entrez le code" name="code2fa" id="code2fa" required>
 
         <input type="button" class="btn cancel" onclick="VerifierCode(event)" value="Vérifier">
+    </form>
+</div>
+
+<div class="form-popup" id="FormulaireVerifier2FAConnexion">
+    <form onsubmit="VerifierCodeConnexion(event)" id="Verifier2FAConnexion" class="form-container">
+        <h1>Verifier le code</h1>
+
+        <label for="code2faConnexion"><b>Code</b></label>
+        <input type="text" placeholder="Entrez le code" name="code2faConnexion" id="code2faConnexion" required>
+
+        <input type="button" class="btn cancel" onclick="VerifierCodeConnexion(event)" value="Vérifier">
     </form>
 </div>
 

@@ -9,6 +9,7 @@ $passwordCreation = "curl_stat_Creation";
 $dbname = "bedardh25techinf_Curl_stat";
 
 
+// Fonction pour créer une connexion à la base de données
 function getConnexionBd() {
     global $servername, $username, $password, $dbname;
     return new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password, [
@@ -16,6 +17,7 @@ function getConnexionBd() {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 }
+// Fonction pour créer une connexion à la base de données pour la création d'utilisateur
 function getConnexionBdCreation() {
     global $servername, $usernameCreation, $passwordCreation, $dbname;
     return new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $usernameCreation, $passwordCreation, [
@@ -23,6 +25,7 @@ function getConnexionBdCreation() {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 }
+// Fonction pour insérer un nouvel utilisateur dans la base de données
 function insertUtilisateur($email, $mot_de_passe) {
     try {
         $hashedPassword = password_hash($mot_de_passe, PASSWORD_DEFAULT);
@@ -42,7 +45,49 @@ function insertUtilisateur($email, $mot_de_passe) {
         exit;
     }    
 }
+// Fonction pour vérifier les identifiants de l'utilisateur dans la base de données
+function verifierUtilisateur($email, $mot_de_passe) {
+    try {
+        $maConnexionPDO = getConnexionBd(); // Utilise l'utilisateur "visiteur"
+        $pdoRequete = $maConnexionPDO->prepare("
+            SELECT mot_de_passe FROM utilisateurs WHERE email = :email
+        ");
+        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
+        $pdoRequete->execute();
+        $resultat = $pdoRequete->fetch();
 
+        if ($resultat && password_verify($mot_de_passe, $resultat['mot_de_passe'])) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Identifiants invalides']);
+        }
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+// Fonction pour vérifier si l'email existe déjà dans la base de données
+function verifierEmailExistant($email) {
+    try {
+        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
+        $pdoRequete = $maConnexionPDO->prepare("SELECT COUNT(*) FROM utilisateurs WHERE email = :email");
+        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
+        $pdoRequete->execute();
+        $resultat = $pdoRequete->fetchColumn(); // Retourne le nombre d'occurrences
+
+        // Si l'email existe déjà, on renvoie un message d'erreur
+        if ($resultat > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'L\'email est déjà utilisé']);
+            exit;
+        }
+
+        // Si l'email n'existe pas, on peut continuer l'exécution
+        return false;
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la vérification de l\'email']);
+        exit;
+    }
+}
 function getStatsByCategory($categoryId) {
     global $servername, $username, $password, $dbname;
 
@@ -113,7 +158,8 @@ function obtenirEquipe() {
 function obtenirStatistiques() {
     return array('Stat1', 'Stat2', 'Stat3');
 }
-
+ // Les requetes AJAX sont traitées ici
+// Vérifiez si la requête est une requête POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action'])) {
         $action = $_POST['action'];
@@ -165,6 +211,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             insertUtilisateur($email,$mot_de_passe);
             echo json_encode(['status' => 'success']);
         }
+        elseif ($action == 'verifierConnexion') {
+            $email = $_POST['email'];
+            $mot_de_passe = $_POST['mot_de_passe'];
+            verifierUtilisateur($email, $mot_de_passe);
+        }
+        elseif ($action == 'verifierEmail') {
+            $email = $_POST['email'];
+            verifierEmailExistant($email);
+        }
+        
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
     }
