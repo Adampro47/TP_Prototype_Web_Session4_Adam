@@ -88,67 +88,35 @@ function verifierEmailExistant($email) {
         exit;
     }
 }
-function getStatsByCategory($categoryId) {
-    global $servername, $username, $password, $dbname;
 
-    try {
-        // Créer une connexion PDO
-        $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        // Requête SQL pour récupérer les données par catégorie
-        $sql = "
-            SELECT tdl.nom AS type_de_lancer, s.valeur
-            FROM stats s
-            JOIN type_de_lancer tdl ON s.type_de_lancer_id = tdl.id
-            WHERE s.category_id = :category_id
-            ORDER BY tdl.nom, s.indice;
-        ";
-
-        // Préparer et exécuter la requête
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':category_id', $categoryId, PDO::PARAM_INT);
-        $stmt->execute();
-
-        // Initialiser un tableau pour stocker les résultats
-        $data = [];
-
-        // Récupérer les données et les organiser dans un format spécifique
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $typeDeLancer = $row['type_de_lancer'];
-            $valeur = $row['valeur'];
-
-            // Ajouter les valeurs à un tableau multidimensionnel
-            if (!isset($data[$typeDeLancer])) {
-                $data[$typeDeLancer] = [];
-            }
-
-            $data[$typeDeLancer][] = $valeur;
-        }
-
-        // Fermer la connexion
-        $conn = null;
-
-        // Retourner le tableau formaté en JSON
-        return json_encode($data);
-
-    } catch (PDOException $e) {
-        // Gérer les erreurs de connexion ou de requête
-        return json_encode(["error" => "Erreur : " . $e->getMessage()]);
-    }
-}
 ////////////////////////////
-$statsData = [
-        "Placement" => [0, 0, 0, 3, 4, 4, 3, 4, 3, 4],
-        "Sortie" => [3, 4, 4, 4, 3, 3, 2, 4, 3, 3],
-        "Raise" => [4, 4, 3, 3, 3, 4, 3, 4, 3, 3],
-        "Garde" => [3, 3, 4, 3, 4, 4, 3, 4, 3, 3],
-        "Double sortie" => [3, 3, 4, 3, 4, 3, 4, 3, 2, 4],
-        "Placement gelé" => [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
-];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+function obtenirStatParCategorie() {
+    error_log("data.php - obtenirStat - Fonction");
+    try {
+        error_log("data.php - obtenirStat - Try");
+        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
+        $pdoRequete = $maConnexionPDO->prepare("SELECT * FROM stats");
+        error_log("data.php - obtenirStat - prepare");
+        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
+        error_log("data.php - obtenirStat - bindParam");
+        $pdoRequete->execute();
+        error_log("data.php - obtenirStat - execute");
+        $resultat = $pdoRequete->fetch();
+        error_log("data.php - obtenirStat - resultat");
+        error_log($resultat);
+        if ($resultat != null){
+            echo json_encode(['status' => 'error', 'stats' => $resultat]);
+        }
+        return false;
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Erreur lors de lobtention des donnees']);
+        exit;
+    }
+}
 
 
 function obtenirEquipe() {
@@ -171,8 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $quatrieme = $_POST['Quatrième'];
             $equipe = $_POST['select_Equipe'];
 
-            $post_string = http_build_query($_POST);
-            /*echo json_encode(['status' => 'success', 'message' => $post_string]);*/
             echo json_encode(['status' => 'success', 'message' => 'Équipe créée avec succès!'.$premier.''.$deuxieme.''.$troisieme.''.$quatrieme.''.$equipe.'']);
         } 
         elseif ($action == 'ajouterStatistique') {
@@ -195,12 +161,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $q = 't4';
             echo json_encode(['status' => 'success', 'premier' => $p,'deuxieme' => $d,'troisieme' => $t,'quatrieme' => $q]);
         }
-        elseif ($action == 'obtenirStatMonEquipe') {
-            echo json_encode(['status' => 'success', 'stats' => $statsData]);
+        elseif ($action == 'obtenirStat') {
+            error_log("data.php - obtenirStat");
+            obtenirStatParCategorie();
         }
-        elseif ($action == 'obtenirStatCategorie') {
-            $equipe = $_POST['select_Equipe2'];
-            echo json_encode(['status' => 'success', 'stat' => $equipe]);
+        elseif ($action == 'obtenirStatParCategorie') {
+            //$equipe = $_POST['select_Equipe2'];
+            
+            obtenirStatParCategorie();
+            
             /*$statistiques = getStatsByCategory($_POST['select_Equipe2']);
             echo json_encode(['status' => 'success', 'stat' => $statistiques]);*/
         }

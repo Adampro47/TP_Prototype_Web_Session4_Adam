@@ -26,7 +26,7 @@
          <option value="u20-filles">U20 Filles</option>
          <option value="mon-equipe">Mon équipe</option>
      </select>
-
+     
      <select id="niveau-select-2">
          <option value="u15">U15</option>
          <option value="u18-garcons">U18 Garçons</option>

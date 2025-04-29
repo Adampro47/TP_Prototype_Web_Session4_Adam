@@ -66,70 +66,65 @@ function toggleMode() {
     updateChart();
 }
 
-function updateChart() {
+async function updateChart() {
     statsChart.data.datasets = [];
+
     if (comparisonMode) {
         const niveau1 = document.getElementById('niveau-select-1').value;
         const niveau2 = document.getElementById('niveau-select-2').value;
-        let stats1;
-        if (niveau1 === 'mon-equipe'){
-            stats1 = obtenirStatMonEquipe();
-        }
-        else{
-            stats1 = statsData[niveau1];}
 
-        alert(stats1);
-        
-        
+        let stats1;
+        if (niveau1 === 'mon-equipe') {
+            stats1 = await obtenirStatMonEquipe();
+        } else {
+            stats1 = statsData[niveau1];
+        }
+
         const stats2 = statsData[niveau2];
-        alert(stats2)
+
+        if (!stats1 || !stats2) {
+            alert("Erreur : données manquantes");
+            return;
+        }
+
         const moyennes1 = Object.values(stats1).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
         const moyennes2 = Object.values(stats2).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
-        
+
         statsChart.data.datasets.push(
             { label: niveau1, data: moyennes1, backgroundColor: 'rgba(54, 162, 235, 0.5)' },
             { label: niveau2, data: moyennes2, backgroundColor: 'rgba(255, 99, 132, 0.5)' }
         );
-    } else {
-        const niveau = document.getElementById('niveau-select-single').value;
-        const stats = statsData[niveau];
-        const moyennes = Object.values(stats).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
-        
-        statsChart.data.datasets.push(
-            { label: niveau, data: moyennes, backgroundColor: 'rgba(75, 192, 192, 0.5)' }
-        );
     }
     statsChart.update();
 }
-function obtenirStatMonEquipe(){
-        alert('DansObtenirStatMonEquipe');
-        const formData = new FormData();
-        formData.append('action', 'obtenirStatMonEquipe');
-        fetch('data.php', {
+
+async function obtenirStatMonEquipe(){
+    const formData = new FormData();
+    formData.append('action', 'obtenirStat');
+
+    try {
+        const response = await fetch('data.php', {
             method: 'POST',
             body: formData
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
-            return response.json();
-        }).then(data => {
-            console.log('Réponse du serveur :', data);
-            if (data.status === 'success') {
-                alert(data.stats['Placement']);
-                return data.stats;
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de la requête fetch:', error);
         });
-    ;
+        if (!response.ok) throw new Error("Erreur HTTP " + response.status);
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            return data.stats;
+        } else {
+            console.error("Erreur serveur:", data.message);
+            return null;
+        }
+    } catch (error) {
+        console.error('Erreur lors de la requête fetch:', error);
+        return null;
+    }
 }
-document.getElementById('toggle-mode').addEventListener('click', toggleMode);
-document.getElementById('niveau-select-1').addEventListener('change', updateChart);
-document.getElementById('niveau-select-2').addEventListener('change', updateChart);
-document.getElementById('niveau-select-single').addEventListener('change', updateChart);
+document.getElementById('toggle-mode').addEventListener('click', () => toggleMode());
+document.getElementById('niveau-select-1').addEventListener('change', () => updateChart());
+document.getElementById('niveau-select-2').addEventListener('change', () => updateChart());
+document.getElementById('niveau-select-single').addEventListener('change', () => updateChart());
 
 
 

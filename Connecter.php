@@ -4,12 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curl Stat - Statistiques</title>
     <link rel="stylesheet" href="./CSS/style.css">
-
 </head>
 <body>  
     <main>
         <h2>Statistiques générales</h2>
-        
         <header>
             <button id="creerEquipe" onclick="ouvrirFormulaireCreationEquipe()">Créer une équipe</button>
             <button id="AjouterStatistique" >Ajouter des statistiques à son équipe</button>
