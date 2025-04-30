@@ -97,8 +97,32 @@ async function updateChart() {
     }
     statsChart.update();
 }
+/*const formData = new FormData();
+    formData.append('action', 'AjouterCompteBD');
+    formData.append('mot_de_passe', mdpTemp);
+    formData.append('email', emailTemp);
+    mdpTemp = "";
+    emailTemp = "";
+    fetch('./data.php', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    }).then(data => {
+        console.log('Réponse du serveur :', data);
+        if (data.status === 'success') {
+        } else {
+            alert('Erreur : ' + data.message);
+        }
+    }).catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });*/
 
 async function obtenirStatMonEquipe(){
+    alert("ScriptGraphique - obtenirStatMonEquipe");
     const formData = new FormData();
     formData.append('action', 'obtenirStat');
 
@@ -109,10 +133,11 @@ async function obtenirStatMonEquipe(){
         });
         if (!response.ok) throw new Error("Erreur HTTP " + response.status);
         const data = await response.json();
-
+        alert(data.status);
         if (data.status === 'success') {
             return data.stats;
         } else {
+            alert(data.message);
             console.error("Erreur serveur:", data.message);
             return null;
         }

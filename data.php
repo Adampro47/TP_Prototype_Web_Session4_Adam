@@ -101,19 +101,23 @@ function obtenirStatParCategorie() {
         $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
         $pdoRequete = $maConnexionPDO->prepare("SELECT * FROM stats");
         error_log("data.php - obtenirStat - prepare");
-        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
-        error_log("data.php - obtenirStat - bindParam");
         $pdoRequete->execute();
         error_log("data.php - obtenirStat - execute");
-        $resultat = $pdoRequete->fetch();
+        $resultat = $pdoRequete->fetchAll();
         error_log("data.php - obtenirStat - resultat");
-        error_log($resultat);
+        $jsonResultat = json_encode($resultat);
+        error_log($jsonResultat);
+        error_log("data.php - obtenirStat - jsonResultat");
+        error_log($jsonResultat[1]);
+        //error_log($jsonResultat[1]["valeur"]);
+
         if ($resultat != null){
             echo json_encode(['status' => 'error', 'stats' => $resultat]);
         }
         return false;
     } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => 'Erreur lors de lobtention des donnees']);
+        error_log($e);
+        echo json_encode(['status' => 'error', 'message' => 'erreur dans la requete a la bd : '.$e]);
         exit;
     }
 }
