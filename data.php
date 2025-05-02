@@ -94,34 +94,27 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-function obtenirStatParCategorie() {
+function obtenirStatParCategorie($categorie_id) {
     error_log("data.php - obtenirStat - Fonction");
     try {
-        error_log("data.php - obtenirStat - Try");
-        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
-        $pdoRequete = $maConnexionPDO->prepare("SELECT * FROM stats");
-        error_log("data.php - obtenirStat - prepare");
+        $maConnexionPDO = getConnexionBd();
+        $pdoRequete = $maConnexionPDO->prepare("SELECT * FROM stats WHERE category_id = :categorie_id");
+        $pdoRequete->bindParam(':categorie_id', $categorie_id, PDO::PARAM_INT);
         $pdoRequete->execute();
-        error_log("data.php - obtenirStat - execute");
-        $resultat = $pdoRequete->fetchAll();
-        error_log("data.php - obtenirStat - resultat");
-        $jsonResultat = json_encode($resultat);
-        error_log($jsonResultat);
-        error_log("data.php - obtenirStat - jsonResultat");
-        error_log($jsonResultat[1]);
-        //error_log($jsonResultat[1]["valeur"]);
+        $resultat = $pdoRequete->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($resultat != null){
-            echo json_encode(['status' => 'error', 'stats' => $resultat]);
+        if ($resultat != null) {
+            echo json_encode(['status' => 'success', 'stats' => $resultat]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Aucune statistique trouvée.']);
         }
-        return false;
+        return true;
     } catch (Exception $e) {
         error_log($e);
-        echo json_encode(['status' => 'error', 'message' => 'erreur dans la requete a la bd : '.$e]);
-        exit;
+        echo json_encode(['status' => 'error', 'message' => 'Erreur dans la requête à la BD : '.$e]);
+        return false;
     }
 }
-
 
 function obtenirEquipe() {
     return array('Premier', 'Deuxième', 'Troisième', 'Quatrième');
@@ -166,8 +159,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(['status' => 'success', 'premier' => $p,'deuxieme' => $d,'troisieme' => $t,'quatrieme' => $q]);
         }
         elseif ($action == 'obtenirStat') {
-            error_log("data.php - obtenirStat");
-            obtenirStatParCategorie();
+            $category_id = filter_input(INPUT_POST, 'category_id', FILTER_SANITIZE_NUMBER_INT);
+            error_log("data.php - obtenirStat - category_id: ".$category_id);
+            obtenirStatParCategorie($category_id);
         }
         elseif ($action == 'obtenirStatParCategorie') {
             //$equipe = $_POST['select_Equipe2'];

@@ -40,7 +40,33 @@ const statsData = {
         "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
     }
 };
-
+function getCategoryNumber(categoryName) {
+    let categoryNumber;
+    
+    switch (categoryName) {
+      case 'u15':
+        categoryNumber = 1;
+        break;
+      case 'u18-garcons':
+        categoryNumber = 2;
+        break;
+      case 'u18-filles':
+        categoryNumber = 3;
+        break;
+      case 'u20-garcons':
+        categoryNumber = 4;
+        break;
+      case 'u20-filles':
+        categoryNumber = 5;
+        break;
+      default:
+        categoryNumber = -1;
+        console.error('Catégorie non reconnue :', categoryName);
+        break;
+    }
+  
+    return categoryNumber;
+  }
 const ctx = document.getElementById('statsChart').getContext('2d');
 var statsChart = new Chart(ctx, {
     type: 'bar',
@@ -72,15 +98,15 @@ async function updateChart() {
     if (comparisonMode) {
         const niveau1 = document.getElementById('niveau-select-1').value;
         const niveau2 = document.getElementById('niveau-select-2').value;
-
-        let stats1;
-        if (niveau1 === 'mon-equipe') {
-            stats1 = await obtenirStatMonEquipe();
-        } else {
-            stats1 = statsData[niveau1];
-        }
-
-        const stats2 = statsData[niveau2];
+        let ID_niveau1 = getCategoryNumber(niveau1);
+        let ID_niveau2 = getCategoryNumber(niveau2);
+        console.log(ID_niveau1);
+        console.log(ID_niveau2);
+        const stats1 = await obtenirStat(ID_niveau1);
+        console.log(stats1);
+        
+        const stats2 = await obtenirStat(ID_niveau2);
+        console.log(stats2);
 
         if (!stats1 || !stats2) {
             alert("Erreur : données manquantes");
@@ -121,31 +147,52 @@ async function updateChart() {
         console.error('Erreur lors de la requête fetch:', error);
     });*/
 
-async function obtenirStatMonEquipe(){
-    alert("ScriptGraphique - obtenirStatMonEquipe");
+async function obtenirStat(id_equipe) {
+
     const formData = new FormData();
     formData.append('action', 'obtenirStat');
+    formData.append('category_id', id_equipe);
 
     try {
         const response = await fetch('data.php', {
             method: 'POST',
             body: formData
         });
+
         if (!response.ok) throw new Error("Erreur HTTP " + response.status);
+
         const data = await response.json();
-        alert(data.status);
         if (data.status === 'success') {
-            return data.stats;
+            const donnees = data.stats;
+            const noms = {
+            1: "Placement",
+            2: "Sortie",
+            3: "Raise",
+            4: "Garde",
+            5: "Double sortie",
+            6: "Placement gelé"
+            };
+
+            const resultat = {};
+
+            for (const item of donnees) {
+            const nom = noms[item.type_de_lancer_id];
+            if (!resultat[nom]) {
+                resultat[nom] = [];
+            }
+            resultat[nom][item.indice - 1] = item.valeur;
+            }
+            return resultat;
         } else {
-            alert(data.message);
-            console.error("Erreur serveur:", data.message);
+            console.error("Erreur côté serveur :", data.message);
             return null;
         }
     } catch (error) {
-        console.error('Erreur lors de la requête fetch:', error);
+        console.error('Erreur lors de la requête fetch :', error);
         return null;
     }
 }
+    
 document.getElementById('toggle-mode').addEventListener('click', () => toggleMode());
 document.getElementById('niveau-select-1').addEventListener('change', () => updateChart());
 document.getElementById('niveau-select-2').addEventListener('change', () => updateChart());
