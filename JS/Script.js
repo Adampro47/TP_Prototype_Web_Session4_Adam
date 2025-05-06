@@ -135,21 +135,23 @@ function VerifierCodeConnexion(event) {
 // Partie pour la création du compte
 ////////////////////////////////////
 
-function AjouterCompte() {
+async function AjouterCompte() {
     var email = document.getElementById("emailCreation").value; 
     var mdp = document.getElementById("pswCreation").value;
-    if (mdp == ""){
+
+    if (mdp == "") {
         alert("Il faut un mot de passe");
         return;
     }
-    //var telephone = document.getElementById("telephonecreation").value; 
-    //alert(telephone);     
+
     emailTemp = email;
     mdpTemp = mdp;
-    emailValide = VerifierEmail();
+
+    const emailValide = await VerifierEmail(); // <-- ici on attend la réponse
     if (!emailValide) {
         return;
     }
+
     EnvoyerCode(email);
     document.getElementById("FormulaireCreation").style.display = "none"; 
     document.getElementById("FormulaireVerifier2FA").style.display = "block";
@@ -181,28 +183,33 @@ function AjouterCompteBD() {
     });
 }
 
-function VerifierEmail() {
+async function VerifierEmail() {
     var email = document.getElementById("emailCreation").value; 
     const formData = new FormData();
     formData.append('action', 'verifierEmail');
     formData.append('email', email);
-    fetch('./data.php', {
-        method: 'POST',
-        body: formData
-    }).then(response => {
+
+    try {
+        const response = await fetch('./data.php', {
+            method: 'POST',
+            body: formData
+        });
+
         if (!response.ok) {
             throw new Error('Erreur de serveur : ' + response.statusText);
         }
-        return response.json();
-    }).then(data => {
+
+        const data = await response.json();
         console.log('Réponse du serveur :', data);
+
         if (data.status === 'success') {
             return true;
         } else {
             alert('Erreur : ' + data.message);
             return false;
         }
-    }).catch(error => {
+    } catch (error) {
         console.error('Erreur lors de la requête fetch:', error);
-    });
+        return false;
+    }
 }

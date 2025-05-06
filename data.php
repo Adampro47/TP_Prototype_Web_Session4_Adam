@@ -80,13 +80,14 @@ function verifierEmailExistant($email) {
             echo json_encode(['status' => 'error', 'message' => 'L\'email est déjà utilisé']);
             exit;
         }
-
+        echo json_encode(['status' => 'success']);
+        exit;
         // Si l'email n'existe pas, on peut continuer l'exécution
-        return false;
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la vérification de l\'email']);
         exit;
     }
+    
 }
 
 ////////////////////////////

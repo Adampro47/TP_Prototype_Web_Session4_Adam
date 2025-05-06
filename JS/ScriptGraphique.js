@@ -192,12 +192,11 @@ async function obtenirStat(id_equipe) {
         return null;
     }
 }
-    
+
 document.getElementById('toggle-mode').addEventListener('click', () => toggleMode());
 document.getElementById('niveau-select-1').addEventListener('change', () => updateChart());
 document.getElementById('niveau-select-2').addEventListener('change', () => updateChart());
 document.getElementById('niveau-select-single').addEventListener('change', () => updateChart());
-
 
 
 function ouvrirFormulaireCreationEquipe() {
@@ -215,6 +214,7 @@ function ouvrirFormulaireAjoutStatistique(joueur) {
     document.textContent = joueur;
     console.log(joueur)
 }
+
 function fermerFormulaireAjoutStatistique() {
     document.getElementById("FormulaireAjoutStatistique").style.display = "none";
 }
