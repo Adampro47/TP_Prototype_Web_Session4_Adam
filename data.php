@@ -90,6 +90,28 @@ function verifierEmailExistant($email) {
     
 }
 
+
+function insertEquipe($nom, $categorie) {
+    try {
+        $maConnexionPDO = getConnexionBdCreation();
+
+        $pdoRequete = $maConnexionPDO->prepare("
+            INSERT INTO equipe (equipe_name, categorie)
+            VALUES (:nom, :categorie)
+        ");
+
+        $pdoRequete->bindParam(':nom', $nom, PDO::PARAM_STR);
+        $pdoRequete->bindParam(':categorie', $categorie, PDO::PARAM_STR);
+
+        $pdoRequete->execute();
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        exit;
+    }    
+    echo json_encode(['status' => 'success']);
+}
+
+
 ////////////////////////////
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -131,14 +153,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $action = $_POST['action'];
 
         if ($action == 'creerEquipe') {
-            $premier = $_POST['Premier'];
-            $deuxieme = $_POST['Deuxieme'];
-            $troisieme = $_POST['Troisieme'];
-            $quatrieme = $_POST['Quatrième'];
-            $equipe = $_POST['select_Equipe'];
+            $equipe = $_POST['Equipe'];
+            $categorie = $_POST['select_Equipe'];
+            error_log($equipe);
+            error_log($categorie);
 
-            echo json_encode(['status' => 'success', 'message' => 'Équipe créée avec succès!'.$premier.''.$deuxieme.''.$troisieme.''.$quatrieme.''.$equipe.'']);
-        } 
+            insertEquipe($equipe,$categorie);
+            echo json_encode(['status' => 'success', 'message' => 'Équipe créée (pas pour de vrai) : '.$equipe.''.$categorie.'']);
+        }
         elseif ($action == 'ajouterStatistique') {
             $statistiques = [];
             foreach ($_POST as $key => $value) {

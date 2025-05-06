@@ -50,22 +50,16 @@
         <div class="form-popup" id="FormulaireCreationEquipe">
             <form id="formCreationEquipe" method="POST" class="form-container">
                 <h1>Création de l'équipe</h1>
-                <label for="Premier"><b>Premier</b></label>
-                <input type="text" placeholder="Nom du premier" name="Premier" id="Premier" required>
-                <label for="Deuxième"><b>Deuxième</b></label>
-                <input type="text" placeholder="Nom du Deuxième" name="Deuxieme" id="Deuxieme" required>
-                <label for="Troisième"><b>Troisième</b></label>
-                <input type="text" placeholder="Nom du Troisième" name="Troisieme" id="Troisieme" required>
-                <label for="Quatrième"><b>Quatrième</b></label>
-                <input type="text" placeholder="Nom du Quatrième" name="Quatrième" id="Quatrième" required>
+                <label for="Equipe"><b>Nom de l'équipe</b></label>
+                <input type="text" placeholder="Nom de l'équipe" name="Equipe" id="Equipe" required>
                 <label for="categorieEquipe">Choisir la catégorie de l'équipe</label>
                 <ul id="selectListCategorieDeEquipe">
                     <li><select name="select_Equipe" class="select-item">
-                        <option value="u15">U15</option>
-                        <option value="u18-garcons">U18 Garçons</option>
-                        <option value="u18-filles">U18 Filles</option>
-                        <option value="u20-garcons">U20 Garçons</option>
-                        <option value="u20-filles">U20 Filles</option>
+                        <option value="1">U15</option>
+                        <option value="2">U18 Garçons</option>
+                        <option value="3">U18 Filles</option>
+                        <option value="4">U20 Garçons</option>
+                        <option value="5">U20 Filles</option>
                     </select></li>
                 </ul>
                 <button type="submit" class="btn">Créer l'équipe</button>
