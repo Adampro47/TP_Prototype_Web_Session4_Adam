@@ -10,6 +10,7 @@
         <h2>Statistiques générales</h2>
         <header>
             <button id="creerEquipe" onclick="ouvrirFormulaireCreationEquipe()">Créer une équipe</button>
+            <button id="RejoindreEquipe" onclick="ouvrirFormulaireJoindreEquipe()">Rejoindre une équipe</button>
             <button id="AjouterStatistique" >Ajouter des statistiques à son équipe</button>
             <button id="VoirStatistique" onclick="ouvrirFormulaireCreationEquipe()">Voir les statistiques de son équipe</button>
         </header>
@@ -65,7 +66,17 @@
                 <button type="submit" class="btn">Créer l'équipe</button>
             </form>
         </div>
-
+        <div class="form-popup" id="FormulaireRejoindreEquipe">
+            <form id="formRejoindreEquipe" method="POST" class="form-container">
+                <h1>Choisir l'équipe à rejoindre</h1>
+                <ul id="selectListEquipe">
+                    <li><select id="nomEquipe" name="select_Equipe" class="select-item">
+                        <option value="null">---</option>
+                    </select></li>
+                </ul>
+                <button type="submit" class="btn">Rejoindre l'équipe</button>
+            </form>
+        </div>
         <div class="form-popup" id="FormulaireChoixDuJoueur">
             <form method="post" id="formChoixDuJoueur" class="form-container">
                 <h1>Choisir le joueur</h1>

@@ -89,7 +89,20 @@ function verifierEmailExistant($email) {
     }
     
 }
+function obtenirNomEquipe() {
+    try {
+        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
+        $pdoRequete = $maConnexionPDO->prepare("SELECT equipe_name FROM `equipe`");
+        $pdoRequete->execute();
+        $resultats = $pdoRequete->fetchAll(PDO::FETCH_COLUMN); // Récupère toutes les valeurs de la colonne equipe_name
 
+        echo json_encode(['status' => 'success', 'equipes' => $resultats]);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la récupération des équipes : '.$e->getMessage()]);
+        exit;
+    }
+}
 
 function insertEquipe($nom, $categorie) {
     try {
@@ -139,9 +152,6 @@ function obtenirStatParCategorie($categorie_id) {
     }
 }
 
-function obtenirEquipe() {
-    return array('Premier', 'Deuxième', 'Troisième', 'Quatrième');
-}
 
 function obtenirStatistiques() {
     return array('Stat1', 'Stat2', 'Stat3');
@@ -210,7 +220,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $email = $_POST['email'];
             verifierEmailExistant($email);
         }
-        
+        elseif ($action == 'obtenirNomEquipe') {
+            obtenirNomEquipe();
+        }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
     }

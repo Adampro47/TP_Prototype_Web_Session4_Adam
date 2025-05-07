@@ -202,7 +202,10 @@ document.getElementById('niveau-select-single').addEventListener('change', () =>
 function ouvrirFormulaireCreationEquipe() {
     document.getElementById("FormulaireCreationEquipe").style.display = "block";
 }
-
+function ouvrirFormulaireJoindreEquipe() {
+    ObtenirNomEquipes();
+    document.getElementById("FormulaireRejoindreEquipe").style.display = "block";
+}
 function fermerFormulaireCreationEquipe() {
     document.getElementById("FormulaireCreationEquipe").style.display = "none";
 }
@@ -244,4 +247,37 @@ function addNewSelect(selectElement) {
         `;
         selectList.appendChild(newSelect);
     }
+}
+function ObtenirNomEquipes() {
+    const formData = new FormData();
+    formData.append('action', 'obtenirNomEquipe');
+    
+    fetch('data.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur de serveur : ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Réponse du serveur :', data);
+        if (data.status === 'success') {
+            const select = document.getElementById("nomEquipe");
+            select.innerHTML = "";
+            data.equipes.forEach(nom => {
+                const option = document.createElement("option");
+                option.value = nom;
+                option.textContent = nom;
+                select.appendChild(option);
+            });
+        } else {
+            alert('Erreur : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });
 }

@@ -147,7 +147,7 @@ async function AjouterCompte() {
     emailTemp = email;
     mdpTemp = mdp;
 
-    const emailValide = await VerifierEmail(); // <-- ici on attend la réponse
+    const emailValide = await VerifierEmail();
     if (!emailValide) {
         return;
     }
