@@ -1,3 +1,17 @@
+<?php 
+session_name('Session_Curl_Stat');
+ini_set("session.cookie_lifetime", 1000000);
+ini_set("session.use_cookies", 1);
+ini_set("session.use_only_cookies" , 1);
+ini_set("session.use_strict_mode", 1);
+ini_set("session.cookie_httponly", 1);
+ini_set("session.cookie_secure", 1);
+ini_set("session.cookie_samesite" , "Strict");
+ini_set("session.cache_limiter" , "nocache");
+ini_set("session.hash_function" , "sha512");
+session_start();
+if (($_SESSION['user_id']))
+?>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -5,7 +19,7 @@
     <title>Curl Stat - Statistiques</title>
     <link rel="stylesheet" href="./CSS/style.css">
 </head>
-<body>  
+<body>
     <main>
         <h2>Statistiques générales</h2>
         <header>

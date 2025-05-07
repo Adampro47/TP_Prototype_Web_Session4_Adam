@@ -86,9 +86,26 @@ function verifierEmailExistant($email) {
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la vérification de l\'email']);
         exit;
-    }
-    
+    }  
 }
+
+function ObtenirIdAvecEmail($email) {
+    try {
+        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
+        $pdoRequete = $maConnexionPDO->prepare("SELECT id FROM utilisateurs WHERE email = :email");
+        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
+        $pdoRequete->execute();
+        $resultat = $pdoRequete->fetchColumn();
+        if ($resultat != null){
+            return($resultat);
+        }
+        return null;
+    } catch (Exception $e) {
+        return null;
+        exit;
+    }  
+}
+
 function obtenirNomEquipe() {
     try {
         $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
@@ -205,11 +222,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(['status' => 'success', 'stat' => $statistiques]);*/
         }
         elseif ($action == 'AjouterCompteBD') {
-            
-            $email = $_POST['email'];
-            $mot_de_passe = $_POST['mot_de_passe'];
-            insertUtilisateur($email,$mot_de_passe);
-            echo json_encode(['status' => 'success']);
+            session_name('Session_Curl_Stat');
+            ini_set("session.cookie_lifetime", 1000000);
+            ini_set("session.use_cookies", 1);
+            ini_set("session.use_only_cookies" , 1);
+            ini_set("session.use_strict_mode", 1);
+            ini_set("session.cookie_httponly", 1);
+            ini_set("session.cookie_secure", 1);
+            ini_set("session.cookie_samesite" , "Strict");
+            ini_set("session.cache_limiter" , "nocache");
+            ini_set("session.hash_function" , "sha512");
+            session_start();
+            if ($_SESSION['code_verifié']){
+                $email = $_POST['email'];
+                $mot_de_passe = $_POST['mot_de_passe'];
+                insertUtilisateur($email,$mot_de_passe);
+                $_SESSION['user_id'] = ObtenirIdAvecEmail($email);
+                echo json_encode(['status' => 'success']);
+            }
+            echo json_encode(['status' => 'error','message' => 'Le code doit être vérifié']);
         }
         elseif ($action == 'verifierConnexion') {
             $email = $_POST['email'];

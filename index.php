@@ -7,7 +7,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CurlStat</title>
-
 </head>
 
 <body>
@@ -46,8 +45,10 @@
          <option value="u20-filles">U20 Filles</option>
      </select>
  </div>
+
+
 <div class="form-popup" id="FormulaireConnexion">
-<form action="Connecter.php" method="post" id="FormulaireConnexion" class="form-container">
+<form  onsubmit="VerifierConnexion()" method="post" id="FormulaireConnexion" class="form-container">
     <h1>Connexion</h1>
 
     <label for="email"><b>Email</b></label>
@@ -62,11 +63,11 @@
 </div>
 
 <div class="form-popup" id="FormulaireCreation">
-    <form id="formulaireCreation" class="form-container">
+    <form onsubmit="AjouterCompte()" id="formulaireCreation" class="form-container">
         <h1>Creer un compte</h1>
 
         <label for="emailCreation"><b>Email</b></label>
-        <input type="text" placeholder="Entrez l'email" name="email" id="emailCreation" value="2369778@cegepat.qc.ca" required>
+        <input type="text" placeholder="Entrez l'email" name="email" id="emailCreation" required>
 
         <!-- <label for="numeroTel"><b>Téléphone</b></label>
         <input type="text" placeholder="Entrez le numéro" name="telephone" id="telephonecreation" required> -->
