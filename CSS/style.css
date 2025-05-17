@@ -66,3 +66,10 @@
 .form-container .btn:hover, .open-button:hover {
   opacity: 1;
 }
+button.disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    border: 1px solid #aaa;
+    pointer-events: none;
+}

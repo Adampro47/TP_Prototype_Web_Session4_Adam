@@ -10,7 +10,10 @@ ini_set("session.cookie_samesite" , "Strict");
 ini_set("session.cache_limiter" , "nocache");
 ini_set("session.hash_function" , "sha512");
 session_start();
-if (($_SESSION['user_id']))
+if (!isset($_SESSION['user_id'])) {
+    header('Location: index.php');
+    exit;
+}
 ?>
 <html lang="fr">
 <head>
@@ -18,6 +21,7 @@ if (($_SESSION['user_id']))
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curl Stat - Statistiques</title>
     <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="icon" href="data:,">
 </head>
 <body>
     <main>
@@ -25,8 +29,8 @@ if (($_SESSION['user_id']))
         <header>
             <button id="creerEquipe" onclick="ouvrirFormulaireCreationEquipe()">Créer une équipe</button>
             <button id="RejoindreEquipe" onclick="ouvrirFormulaireJoindreEquipe()">Rejoindre une équipe</button>
-            <button id="AjouterStatistique" >Ajouter des statistiques à son équipe</button>
-            <button id="VoirStatistique" onclick="ouvrirFormulaireCreationEquipe()">Voir les statistiques de son équipe</button>
+            <button onclick="ouvrirFormulaireCreationEvenement()">Créer un événement</button>
+
         </header>
         <h2></h2>
         <p>Comparez ou affichez une seule catégorie.</p>
@@ -60,6 +64,17 @@ if (($_SESSION['user_id']))
                 <option value="u20-garcons">U20 Garçons</option>
                 <option value="u20-filles">U20 Filles</option>
             </select>
+        </div>
+
+        <div class="form-popup" id="FormulaireCreationEvenement">
+            <form id="formCreationEvenement" method="POST" class="form-container">
+                <h1>Créer un événement</h1>
+                <label for="nomEvenement">Nom :</label>
+                <input type="text" name="nomEvenement" required>
+                <label for="dateEvenement">Date :</label>
+                <input type="date" name="dateEvenement" required>
+                <button type="submit" class="btn">Créer</button>
+            </form>
         </div>
 
         <div class="form-popup" id="FormulaireCreationEquipe">
@@ -152,11 +167,11 @@ if (($_SESSION['user_id']))
         <canvas id="statsChart"></canvas>
     </main>
 
-
-</body>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./JS/ScriptGraphique.js"></script>
 <script src="./JS/Connecter_script.js"></script>
+</body>
+
 
 
 </html>

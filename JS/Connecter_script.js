@@ -1,51 +1,90 @@
- ///Test sql
- document.getElementById('formtestsql').addEventListener('submit', function(event) {
-    event.preventDefault();  // Empêcher le rechargement de la page
-    
-    const formData = new FormData();
-    formData.append('action', 'obtenirStatCategorie');
-    
-
+window.addEventListener('load', function () {
     fetch('data.php', {
         method: 'POST',
-        body: formData
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur de serveur : ' + response.statusText);
-        }
-        return response.json();
-    }).then(data => {
-        console.log('Réponse du serveur :', data);
-        if (data.status === 'success') {
-            console.log(data.stat);
-            alert(JSON.stringify(data.stat));  // Afficher les statistiques dans un format lisible
-        } else {
-            alert('Erreur : ' + data.message);
-        }
-    }).catch(error => {
-        
-        console.error('Erreur lors de la requête fetch:', error);
-    });
+        body: new URLSearchParams({ action: 'verifierRejoignable' })
+    }).then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.dejaRejoint) {
+                const btn = document.getElementById('RejoindreEquipe');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('disabled');
+                    btn.textContent = "Équipe déjà rejointe";
+                }
+            }
+        });
 });
 
-        // Obtenir liste joueur
-    document.getElementById('AjouterStatistique').addEventListener('click', function(event) {
+const formEvent = document.getElementById('formCreationEvenement');
+if (formEvent) {
+    formEvent.addEventListener('submit', function (event) {
+        alert("test");
+        event.preventDefault();
+        const formData = new FormData(this);
+        formData.append('action', 'creerEvenement');
+        alert("test1");
+
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Événement créé.');
+                    document.getElementById("FormulaireCreationEvenement").style.display = "none";
+                } else {
+                    alert('Erreur : ' + data.message);
+                }
+            });
+    });
+}
+
+const formRejoindre = document.getElementById('formRejoindreEquipe');
+if (formRejoindre) {
+    formRejoindre.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        formData.append('action', 'rejoindreEquipe');
+
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    document.getElementById("formRejoindreEquipe").style.display = "none";
+                    const btn = document.getElementById('RejoindreEquipe');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.classList.add('disabled');
+                        btn.textContent = "Équipe déjà rejointe";
+                    }
+                } else {
+                    alert('Erreur : ' + data.message);
+                }
+            }).catch(error => {
+                console.error('Erreur fetch :', error);
+            });
+    });
+}
+
+const testForm = document.getElementById('formtestsql');
+if (testForm) {
+    testForm.addEventListener('submit', function (event) {
+        event.preventDefault();
         const formData = new FormData();
-        event.preventDefault(); 
-        formData.append('action', 'obtenirNomJoueur');
+        formData.append('action', 'obtenirStatCategorie');
+
         fetch('data.php', {
             method: 'POST',
             body: formData
         }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
+            if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
             return response.json();
         }).then(data => {
-            console.log('Réponse du serveur :', data);
             if (data.status === 'success') {
-                ouvrirFormulaireChoixDuJoueur(data.premier,data.deuxieme,data.troisieme,data.quatrieme);
-                
+                alert(JSON.stringify(data.stat));
             } else {
                 alert('Erreur : ' + data.message);
             }
@@ -53,95 +92,102 @@
             console.error('Erreur lors de la requête fetch:', error);
         });
     });
-        /////
-        document.getElementById('formChoixDuJoueur').addEventListener('submit', function(event) {
+}
+
+const btnAjouterStat = document.getElementById('AjouterStatistique');
+if (btnAjouterStat) {
+    btnAjouterStat.addEventListener('click', function (event) {
         event.preventDefault();
-        var selectElement = document.getElementById('JoueurChoisi');
-        var joueurchoisiTexte = selectElement.options[selectElement.selectedIndex].text;
+        const formData = new FormData();
+        formData.append('action', 'obtenirNomJoueur');
+
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
+            return response.json();
+        }).then(data => {
+            if (data.status === 'success') {
+                ouvrirFormulaireChoixDuJoueur(data.premier, data.deuxieme, data.troisieme, data.quatrieme);
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        }).catch(error => {
+            console.error('Erreur lors de la requête fetch:', error);
+        });
+    });
+}
+
+const choixForm = document.getElementById('formChoixDuJoueur');
+if (choixForm) {
+    choixForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const selectElement = document.getElementById('JoueurChoisi');
+        const joueurchoisiTexte = selectElement.options[selectElement.selectedIndex].text;
         ouvrirFormulaireAjoutStatistique(joueurchoisiTexte);
     });
-        // Obtenir liste joueur
-    document.getElementById('AjouterStatistique').addEventListener('click', function(event) {
-        const formData = new FormData();
-        event.preventDefault(); 
-        formData.append('action', 'obtenirNomJoueur');
-        fetch('data.php', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
-            return response.json();
-        }).then(data => {
-            console.log('Réponse du serveur :', data);
-            if (data.status === 'success') {
-                ouvrirFormulaireChoixDuJoueur(data.premier,data.deuxieme,data.troisieme,data.quatrieme);
-                
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de la requête fetch:', error);
-        });
-    });
-        // Creer équipe
-    document.getElementById('formCreationEquipe').addEventListener('submit', function(event) {
-        event.preventDefault(); 
+}
+
+const creationForm = document.getElementById('formCreationEquipe');
+if (creationForm) {
+    creationForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        alert("creer equipe");
         const formData = new FormData(this);
-        formData.append('action', 'creerEquipe'); 
+        formData.append('action', 'creerEquipe');
+
+        fetch('data.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json())
+            .then(data => {
+                console.log('Réponse serveur:', data);
+                if (data.status === 'success') {
+                    fermerFormulaireCreationEquipe();
+                    alert(data.message || "Équipe créée.");
+                } else {
+                    alert('Erreur : ' + data.message);
+                }
+            }).catch(error => {
+                console.error('Erreur fetch :', error);
+            });
+    });
+}
+
+const ajoutStatForm = document.getElementById('formAjoutStatistique');
+if (ajoutStatForm) {
+    ajoutStatForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const selectItems = document.querySelectorAll('.select-item');
+        selectItems.forEach((select, index) => {
+            if (select.value !== 'null' && select.value !== '') {
+                formData.append(`select_${index}`, select.value);
+            }
+        });
+
+        formData.append('action', 'ajouterStatistique');
+
         fetch('data.php', {
             method: 'POST',
             body: formData
         }).then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur de serveur : ' + response.statusText);
-            }
+            if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
             return response.json();
         }).then(data => {
-            console.log('Réponse du serveur :', data);
             if (data.status === 'success') {
-                fermerFormulaireCreationEquipe();
-                alert(data.message); 
-            } else {
-                alert('Erreur : ' + data.message);
+                alert(data.message);
+                fermerFormulaireAjoutStatistique();
             }
         }).catch(error => {
             console.error('Erreur lors de la requête fetch:', error);
         });
     });
+}
 
-    // Envoyer stat
-
-    document.getElementById('formAjoutStatistique').addEventListener('submit', function(event) {
-    event.preventDefault(); 
-
-    const formData = new FormData(this);  
-
-    const selectItems = document.querySelectorAll('.select-item');
-    selectItems.forEach((select, index) => {
-        if (select.value !== 'null' && select.value !== '') {
-            formData.append(`select_${index}`, select.value); 
-        }
-    });
-
-    formData.append('action', 'ajouterStatistique');
-
-    fetch('data.php', {
-        method: 'POST',
-        body: formData
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur de serveur : ' + response.statusText);
-        }
-        return response.json();
-    }).then(data => {
-        console.log('Réponse du serveur :', data);
-        if (data.status === 'success') {
-            alert(data.message);
-            fermerFormulaireAjoutStatistique();
-        }
-    }).catch(error => {
-        console.error('Erreur lors de la requête fetch:', error);
-    });
-});
+// Fonction en dehors du load
+function ouvrirFormulaireCreationEvenement() {
+    const formDiv = document.getElementById("FormulaireCreationEvenement");
+    if (formDiv) formDiv.style.display = "block";
+}

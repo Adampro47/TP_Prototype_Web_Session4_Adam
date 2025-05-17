@@ -1,6 +1,24 @@
 <?php
-header('Content-Type: application/json');
-// Paramètres de connexion à la base de données
+session_name('Session_Curl_Stat');
+ini_set("session.cookie_lifetime", 1000000);
+ini_set("session.use_cookies", 1);
+ini_set("session.use_only_cookies", 1);
+ini_set("session.use_strict_mode", 1);
+ini_set("session.cookie_httponly", 1);
+ini_set("session.cookie_secure", 1);
+ini_set("session.cookie_samesite", "Strict");
+ini_set("session.cache_limiter", "nocache");
+ini_set("session.hash_function", "sha512");
+session_start();
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
+    header('Content-Type: application/json');
+}
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Paramètres de connexion
 $servername = "127.0.0.1";
 $username = "bedardh25techinf_visiteur";
 $usernameCreation = "bedardh25techinf_user_creation";
@@ -9,7 +27,7 @@ $passwordCreation = "curl_stat_Creation";
 $dbname = "bedardh25techinf_Curl_stat";
 
 
-// Fonction pour créer une connexion à la base de données
+// Connexion BD
 function getConnexionBd() {
     global $servername, $username, $password, $dbname;
     return new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password, [
@@ -17,7 +35,7 @@ function getConnexionBd() {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 }
-// Fonction pour créer une connexion à la base de données pour la création d'utilisateur
+
 function getConnexionBdCreation() {
     global $servername, $usernameCreation, $passwordCreation, $dbname;
     return new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $usernameCreation, $passwordCreation, [
@@ -25,38 +43,31 @@ function getConnexionBdCreation() {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 }
-// Fonction pour insérer un nouvel utilisateur dans la base de données
+
 function insertUtilisateur($email, $mot_de_passe) {
     try {
         $hashedPassword = password_hash($mot_de_passe, PASSWORD_DEFAULT);
-        $maConnexionPDO = getConnexionBdCreation();
-
-        $pdoRequete = $maConnexionPDO->prepare("
-            INSERT INTO utilisateurs (email, mot_de_passe)
-            VALUES (:email, :mot_de_passe)
-        ");
-
-        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
-        $pdoRequete->bindParam(':mot_de_passe', $hashedPassword, PDO::PARAM_STR);
-
-        $pdoRequete->execute();
+        $pdo = getConnexionBdCreation();
+        $requete = $pdo->prepare("INSERT INTO utilisateurs (email, mot_de_passe) VALUES (:email, :mot_de_passe)");
+        $requete->bindParam(':email', $email);
+        $requete->bindParam(':mot_de_passe', $hashedPassword);
+        $requete->execute();
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
         exit;
-    }    
+    }
 }
-// Fonction pour vérifier les identifiants de l'utilisateur dans la base de données
+
 function verifierUtilisateur($email, $mot_de_passe) {
     try {
-        $maConnexionPDO = getConnexionBd(); // Utilise l'utilisateur "visiteur"
-        $pdoRequete = $maConnexionPDO->prepare("
-            SELECT mot_de_passe FROM utilisateurs WHERE email = :email
-        ");
-        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
-        $pdoRequete->execute();
-        $resultat = $pdoRequete->fetch();
+        $pdo = getConnexionBd();
+        $requete = $pdo->prepare("SELECT mot_de_passe FROM utilisateurs WHERE email = :email");
+        $requete->bindParam(':email', $email);
+        $requete->execute();
+        $result = $requete->fetch();
 
-        if ($resultat && password_verify($mot_de_passe, $resultat['mot_de_passe'])) {
+        if ($result && password_verify($mot_de_passe, $result['mot_de_passe'])) {
+            $_SESSION['user_id'] = ObtenirIdAvecEmail($email);
             echo json_encode(['status' => 'success']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Identifiants invalides']);
@@ -66,196 +77,271 @@ function verifierUtilisateur($email, $mot_de_passe) {
     }
     exit;
 }
-// Fonction pour vérifier si l'email existe déjà dans la base de données
+
 function verifierEmailExistant($email) {
     try {
-        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
-        $pdoRequete = $maConnexionPDO->prepare("SELECT COUNT(*) FROM utilisateurs WHERE email = :email");
-        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
-        $pdoRequete->execute();
-        $resultat = $pdoRequete->fetchColumn(); // Retourne le nombre d'occurrences
+        $pdo = getConnexionBd();
+        $requete = $pdo->prepare("SELECT COUNT(*) FROM utilisateurs WHERE email = :email");
+        $requete->bindParam(':email', $email);
+        $requete->execute();
+        $count = $requete->fetchColumn();
 
-        // Si l'email existe déjà, on renvoie un message d'erreur
-        if ($resultat > 0) {
+        if ($count > 0) {
             echo json_encode(['status' => 'error', 'message' => 'L\'email est déjà utilisé']);
             exit;
         }
         echo json_encode(['status' => 'success']);
         exit;
-        // Si l'email n'existe pas, on peut continuer l'exécution
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la vérification de l\'email']);
         exit;
-    }  
+    }
 }
 
 function ObtenirIdAvecEmail($email) {
     try {
-        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
-        $pdoRequete = $maConnexionPDO->prepare("SELECT id FROM utilisateurs WHERE email = :email");
-        $pdoRequete->bindParam(':email', $email, PDO::PARAM_STR);
-        $pdoRequete->execute();
-        $resultat = $pdoRequete->fetchColumn();
-        if ($resultat != null){
-            return($resultat);
-        }
-        return null;
+        $pdo = getConnexionBd();
+        $requete = $pdo->prepare("SELECT id FROM utilisateurs WHERE email = :email");
+        $requete->bindParam(':email', $email);
+        $requete->execute();
+        return $requete->fetchColumn() ?: null;
     } catch (Exception $e) {
         return null;
-        exit;
-    }  
+    }
 }
 
 function obtenirNomEquipe() {
     try {
-        $maConnexionPDO = getConnexionBd(); // Connexion à la base de données
-        $pdoRequete = $maConnexionPDO->prepare("SELECT equipe_name FROM `equipe`");
-        $pdoRequete->execute();
-        $resultats = $pdoRequete->fetchAll(PDO::FETCH_COLUMN); // Récupère toutes les valeurs de la colonne equipe_name
-
-        echo json_encode(['status' => 'success', 'equipes' => $resultats]);
+        $pdo = getConnexionBd();
+        $requete = $pdo->prepare("SELECT id_equipe, equipe_name FROM equipe");
+        $requete->execute();
+        $equipes = $requete->fetchAll();
+        echo json_encode(['status' => 'success', 'equipes' => $equipes]);
         exit;
     } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la récupération des équipes : '.$e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => 'Erreur BD : '.$e->getMessage()]);
         exit;
     }
 }
 
 function insertEquipe($nom, $categorie) {
     try {
-        $maConnexionPDO = getConnexionBdCreation();
+        $pdo = getConnexionBd();
 
-        $pdoRequete = $maConnexionPDO->prepare("
-            INSERT INTO equipe (equipe_name, categorie)
-            VALUES (:nom, :categorie)
-        ");
+        // Vérifier si le nom existe déjà
+        $check = $pdo->prepare("SELECT COUNT(*) FROM equipe WHERE equipe_name = :nom");
+        $check->bindParam(':nom', $nom);
+        $check->execute();
 
-        $pdoRequete->bindParam(':nom', $nom, PDO::PARAM_STR);
-        $pdoRequete->bindParam(':categorie', $categorie, PDO::PARAM_STR);
+        if ($check->fetchColumn() > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Ce nom d\'équipe est déjà utilisé.']);
+            exit;
+        }
+        $pdo = getConnexionBdCreation();
+        $requete = $pdo->prepare("INSERT INTO equipe (equipe_name, categorie) VALUES (:nom, :categorie)");
+        $requete->bindParam(':nom', $nom);
+        $requete->bindParam(':categorie', $categorie);
+        $requete->execute();
 
-        $pdoRequete->execute();
+        echo json_encode(['status' => 'success']);
+        exit;
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
         exit;
-    }    
-    echo json_encode(['status' => 'success']);
-}
-
-
-////////////////////////////
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-function obtenirStatParCategorie($categorie_id) {
-    error_log("data.php - obtenirStat - Fonction");
-    try {
-        $maConnexionPDO = getConnexionBd();
-        $pdoRequete = $maConnexionPDO->prepare("SELECT * FROM stats WHERE category_id = :categorie_id");
-        $pdoRequete->bindParam(':categorie_id', $categorie_id, PDO::PARAM_INT);
-        $pdoRequete->execute();
-        $resultat = $pdoRequete->fetchAll(PDO::FETCH_ASSOC);
-
-        if ($resultat != null) {
-            echo json_encode(['status' => 'success', 'stats' => $resultat]);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Aucune statistique trouvée.']);
-        }
-        return true;
-    } catch (Exception $e) {
-        error_log($e);
-        echo json_encode(['status' => 'error', 'message' => 'Erreur dans la requête à la BD : '.$e]);
-        return false;
     }
 }
 
 
-function obtenirStatistiques() {
-    return array('Stat1', 'Stat2', 'Stat3');
-}
- // Les requetes AJAX sont traitées ici
-// Vérifiez si la requête est une requête POST
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['action'])) {
-        $action = $_POST['action'];
+function obtenirStatParCategorie($categorie_id) {
+    try {
+        $pdo = getConnexionBd();
+        $requete = $pdo->prepare("SELECT * FROM stats WHERE category_id = :categorie_id");
+        $requete->bindParam(':categorie_id', $categorie_id);
+        $requete->execute();
+        $result = $requete->fetchAll();
 
-        if ($action == 'creerEquipe') {
-            $equipe = $_POST['Equipe'];
-            $categorie = $_POST['select_Equipe'];
-            error_log($equipe);
-            error_log($categorie);
-
-            insertEquipe($equipe,$categorie);
-            echo json_encode(['status' => 'success', 'message' => 'Équipe créée (pas pour de vrai) : '.$equipe.''.$categorie.'']);
+        if ($result) {
+            echo json_encode(['status' => 'success', 'stats' => $result]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Aucune statistique trouvée.']);
         }
-        elseif ($action == 'ajouterStatistique') {
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Erreur BD : '.$e->getMessage()]);
+        exit;
+    }
+}
+
+function obtenirStatistiques() {
+    return ['Stat1', 'Stat2', 'Stat3'];
+}
+function rejoindreEquipe($idUtilisateur, $idEquipe) {
+    try {
+        $pdo = getConnexionBdCreation();
+        $requete = $pdo->prepare("INSERT INTO equipe_joueur (id_equipe, id_joueur) VALUES (:idEquipe, :idJoueur)");
+        $requete->bindParam(':idEquipe', $idEquipe, PDO::PARAM_INT);
+        $requete->bindParam(':idJoueur', $idUtilisateur, PDO::PARAM_INT);
+        $requete->execute();
+
+        echo json_encode(['status' => 'success', 'message' => 'Équipe rejointe avec succès']);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Erreur lors de l’ajout à l’équipe : ' . $e->getMessage()]);
+        exit;
+    }
+}
+function creerEvenement($nom, $date, $idEquipe) {
+    try {
+        $pdo = getConnexionBdCreation();
+        $stmt = $pdo->prepare("INSERT INTO evenements (nom, date_event, id_equipe) VALUES (:nom, :date_event, :id_equipe)");
+        $stmt->bindParam(':nom', $nom);
+        $stmt->bindParam(':date_event', $date);
+        $stmt->bindParam(':id_equipe', $idEquipe, PDO::PARAM_INT);
+        $stmt->execute();
+        echo json_encode(['status' => 'success']);
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+function getEquipeParJoueur($idJoueur) {
+    try {
+        $pdo = getConnexionBd();
+        $stmt = $pdo->prepare("SELECT id_equipe FROM equipe_joueur WHERE id_joueur = :id");
+        $stmt->bindParam(':id', $idJoueur, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    } catch (Exception $e) {
+        return null;
+    }
+}
+// Traitement des requêtes
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+
+    switch ($action) {
+        case 'creerEquipe':
+            insertEquipe($_POST['Equipe'], $_POST['select_Equipe']);
+            break;
+
+        case 'ajouterStatistique':
             $statistiques = [];
             foreach ($_POST as $key => $value) {
                 if (strpos($key, 'select_') === 0) {
                     $statistiques[] = $value;
                 }
             }
+            echo json_encode(['status' => 'success', 'message' => 'Statistiques ajoutées', 'data' => $statistiques]);
+            exit;
+
+        case 'obtenirNomJoueur':
             echo json_encode([
                 'status' => 'success',
-                'message' => 'Statistiques ajoutées',
-                'data' => $statistiques
+                'premier' => 't1',
+                'deuxieme' => 't2',
+                'troisieme' => 't3',
+                'quatrieme' => 't4'
             ]);
-        }
-        elseif ($action == 'obtenirNomJoueur') {
-            $p = 't1';
-            $d = 't2';
-            $t = 't3';
-            $q = 't4';
-            echo json_encode(['status' => 'success', 'premier' => $p,'deuxieme' => $d,'troisieme' => $t,'quatrieme' => $q]);
-        }
-        elseif ($action == 'obtenirStat') {
+            exit;
+
+        case 'obtenirStat':
             $category_id = filter_input(INPUT_POST, 'category_id', FILTER_SANITIZE_NUMBER_INT);
-            error_log("data.php - obtenirStat - category_id: ".$category_id);
             obtenirStatParCategorie($category_id);
-        }
-        elseif ($action == 'obtenirStatParCategorie') {
-            //$equipe = $_POST['select_Equipe2'];
+            break;
+
+        case 'obtenirStatParCategorie':
+            $categorie = $_POST['select_Equipe2'] ?? null;
+            if ($categorie !== null) {
+                obtenirStatParCategorie($categorie);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Catégorie manquante']);
+                exit;
+            }
+            break;
+
+        case 'AjouterCompteBD':
             
-            obtenirStatParCategorie();
-            
-            /*$statistiques = getStatsByCategory($_POST['select_Equipe2']);
-            echo json_encode(['status' => 'success', 'stat' => $statistiques]);*/
-        }
-        elseif ($action == 'AjouterCompteBD') {
-            session_name('Session_Curl_Stat');
-            ini_set("session.cookie_lifetime", 1000000);
-            ini_set("session.use_cookies", 1);
-            ini_set("session.use_only_cookies" , 1);
-            ini_set("session.use_strict_mode", 1);
-            ini_set("session.cookie_httponly", 1);
-            ini_set("session.cookie_secure", 1);
-            ini_set("session.cookie_samesite" , "Strict");
-            ini_set("session.cache_limiter" , "nocache");
-            ini_set("session.hash_function" , "sha512");
-            session_start();
-            if ($_SESSION['code_verifié']){
-                $email = $_POST['email'];
+            if (!empty($_SESSION['code_verifié'])) {
+                $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
                 $mot_de_passe = $_POST['mot_de_passe'];
-                insertUtilisateur($email,$mot_de_passe);
+                if (!$email || !$mot_de_passe) {
+                    echo json_encode(['status' => 'error', 'message' => 'Champs invalides']);
+                    exit;
+                }
+                insertUtilisateur($email, $mot_de_passe);
                 $_SESSION['user_id'] = ObtenirIdAvecEmail($email);
                 echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Le code doit être vérifié']);
             }
-            echo json_encode(['status' => 'error','message' => 'Le code doit être vérifié']);
-        }
-        elseif ($action == 'verifierConnexion') {
+            exit;
+
+        case 'verifierConnexion':
             $email = $_POST['email'];
             $mot_de_passe = $_POST['mot_de_passe'];
             verifierUtilisateur($email, $mot_de_passe);
-        }
-        elseif ($action == 'verifierEmail') {
+            break;
+
+        case 'verifierEmail':
             $email = $_POST['email'];
             verifierEmailExistant($email);
-        }
-        elseif ($action == 'obtenirNomEquipe') {
+            break;
+
+        case 'obtenirNomEquipe':
             obtenirNomEquipe();
-        }
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
+            break;
+
+        case 'rejoindreEquipe':
+            if (!isset($_SESSION['user_id'])) {
+                echo json_encode(['status' => 'error', 'message' => 'Non connecté']);
+                exit;
+            }
+            $idEquipe = $_POST['select_Equipe'] ?? null;
+            if (!$idEquipe) {
+                echo json_encode(['status' => 'error', 'message' => 'ID d’équipe manquant']);
+                exit;
+            }
+            rejoindreEquipe($_SESSION['user_id'], $idEquipe);
+            break;
+        case 'creerEvenement':
+            $nom = $_POST['nomEvenement'];
+            $date = $_POST['dateEvenement'];
+            
+            // Obtenir l'équipe de l'utilisateur (à implémenter selon ta logique)
+            $idEquipe = getEquipeParJoueur($_SESSION['user_id']);
+            
+            if ($idEquipe !== null && $idEquipe !== '' && $nom && $date) {
+                creerEvenement($nom, $date, $idEquipe);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Informations manquantes'.$nom.$date.$idEquipe]);
+                exit;
+            }
+            break;
+        case 'verifierRejoignable':
+            if (!isset($_SESSION['user_id'])) {
+                echo json_encode(['status' => 'error', 'message' => 'Non connecté']);
+                exit;
+            }
+            try {
+                $pdo = getConnexionBd();
+                $requete = $pdo->prepare("SELECT COUNT(*) FROM equipe_joueur WHERE id_joueur = :id");
+                $requete->bindParam(':id', $_SESSION['user_id'], PDO::PARAM_INT);
+                $requete->execute();
+                $dejaRejoint = $requete->fetchColumn() > 0;
+                echo json_encode(['status' => 'success', 'dejaRejoint' => $dejaRejoint]);
+            } catch (Exception $e) {
+                echo json_encode(['status' => 'error', 'message' => 'Erreur BD']);
+            }
+            exit;
+
+        default:
+            error_log("Action inconnue : " . $action);
+            echo json_encode(['status' => 'error', 'message' => 'Action inconnue']);
+            exit;
     }
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);
+    exit;
 }
 ?>

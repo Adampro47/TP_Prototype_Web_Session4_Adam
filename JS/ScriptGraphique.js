@@ -257,9 +257,7 @@ function ObtenirNomEquipes() {
         body: formData
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur de serveur : ' + response.statusText);
-        }
+        if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
         return response.json();
     })
     .then(data => {
@@ -267,10 +265,10 @@ function ObtenirNomEquipes() {
         if (data.status === 'success') {
             const select = document.getElementById("nomEquipe");
             select.innerHTML = "";
-            data.equipes.forEach(nom => {
+            data.equipes.forEach(equipe => {
                 const option = document.createElement("option");
-                option.value = nom;
-                option.textContent = nom;
+                option.value = equipe.id_equipe;
+                option.textContent = equipe.equipe_name;
                 select.appendChild(option);
             });
         } else {
