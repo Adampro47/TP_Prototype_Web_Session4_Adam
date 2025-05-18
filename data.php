@@ -15,6 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 }
 require_once '/home/bedardh25techinf/etc/bedard.h25.techinfo420.ca/connexion.php';
 
+
+function logMessage($message) {
+    $fichierLog = '/home/bedardh25techinf/log/curlstat.log';
+    $date = date('Y-m-d H:i:s');
+    $texte = "[$date] $message" . PHP_EOL;
+
+    file_put_contents($fichierLog, $texte, FILE_APPEND);
+}
+
+
 function insertUtilisateur($email, $mot_de_passe) {
     try {
         $hashedPassword = password_hash($mot_de_passe, PASSWORD_DEFAULT);
@@ -23,6 +33,7 @@ function insertUtilisateur($email, $mot_de_passe) {
         $requete->bindParam(':email', $email);
         $requete->bindParam(':mot_de_passe', $hashedPassword);
         $requete->execute();
+        logMessage("Utilisateur ajouté a la base de donnée : $email");
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Erreur lors de l’insertion.']);
         exit;
@@ -39,6 +50,7 @@ function verifierUtilisateur($email, $mot_de_passe) {
 
         if ($result && password_verify($mot_de_passe, $result['mot_de_passe'])) {
             $_SESSION['user_id'] = ObtenirIdAvecEmail($email);
+            logMessage("Utilisateur connecté : $email");
             echo json_encode(['status' => 'success']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Identifiants invalides']);
@@ -51,6 +63,7 @@ function verifierUtilisateur($email, $mot_de_passe) {
 
 function verifierEmailExistant($email) {
     try {
+        logMessage("Vérification de l'existance de l'email : $email");
         $pdo = getConnexionBd();
         $requete = $pdo->prepare("SELECT COUNT(*) FROM utilisateurs WHERE email = :email");
         $requete->bindParam(':email', $email);
@@ -71,6 +84,7 @@ function verifierEmailExistant($email) {
 
 function ObtenirIdAvecEmail($email) {
     try {
+        logMessage("Récupération de l'ID avec l'email : $email");
         $pdo = getConnexionBd();
         $requete = $pdo->prepare("SELECT id FROM utilisateurs WHERE email = :email");
         $requete->bindParam(':email', $email);
@@ -196,7 +210,7 @@ function rejoindreEquipe($idUtilisateur, $idEquipe) {
         $requete->bindParam(':idEquipe', $idEquipe, PDO::PARAM_INT);
         $requete->bindParam(':idJoueur', $idUtilisateur, PDO::PARAM_INT);
         $requete->execute();
-
+        logMessage("Utilisateur $idUtilisateur a rejoint l'équipe $idEquipe");
         echo json_encode(['status' => 'success', 'message' => 'Équipe rejointe avec succès']);
         exit;
     } catch (Exception $e) {
@@ -212,6 +226,7 @@ function creerEvenement($nom, $date, $idEquipe) {
         $requete->bindParam(':date_event', $date);
         $requete->bindParam(':id_equipe', $idEquipe, PDO::PARAM_INT);
         $requete->execute();
+        logMessage("Événement créé : $nom pour l'équipe $idEquipe");
         echo json_encode(['status' => 'success']);
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
@@ -292,7 +307,6 @@ function ajouterStatistiquesEvenement($post, $user_id) {
             INSERT INTO stats (category_id, type_de_lancer_id, valeur, indice, id_equipe, id_event)
             VALUES (:category_id, :type_de_lancer_id, :valeur, :indice, :id_equipe, :id_event)
         ");
-
         foreach ($valeurs as $v) {
             $requete->execute([
                 ':category_id' => $categoryId,
@@ -304,7 +318,7 @@ function ajouterStatistiquesEvenement($post, $user_id) {
             ]);
             error_log("Insertion OK : " . json_encode($v));
         }
-
+        logMessage("Statistiques ajoutées pour l'événement $idEvenement, équipe $idEquipe");
         echo json_encode(['status' => 'success', 'message' => 'Statistiques ajoutées']);
     } catch (Exception $e) {
         error_log("Erreur BD : " . $e->getMessage());
