@@ -75,7 +75,6 @@ function ouvrirFormulaireJoindreEquipe() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Équipes chargées :', data);
         if (data.status === 'success') {
             data.equipes.forEach(equipe => {
                 const option = document.createElement('option');
