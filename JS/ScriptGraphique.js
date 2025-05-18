@@ -1,157 +1,44 @@
-const statsData = {
-    "u15": {
-        "Placement": [3, 4, 2, 3, 4, 4, 3, 2, 4, 3],
-        "Sortie": [2, 3, 4, 3, 3, 2, 4, 3, 2, 3],
-        "Raise": [4, 4, 3, 3, 2, 4, 3, 3, 2, 3],
-        "Garde": [3, 3, 4, 2, 3, 4, 3, 4, 2, 3],
-        "Double sortie": [2, 3, 2, 3, 4, 4, 3, 3, 2, 4],
-        "Placement gelé": [3, 2, 4, 4, 3, 3, 4, 2, 3, 3]
-    },
-    "u18-garcons": {
-        "Placement": [4, 4, 3, 3, 4, 4, 3, 4, 3, 4],
-        "Sortie": [3, 4, 4, 4, 3, 3, 2, 4, 3, 3],
-        "Raise": [4, 4, 3, 3, 3, 4, 3, 4, 3, 3],
-        "Garde": [3, 3, 4, 3, 4, 4, 3, 4, 3, 3],
-        "Double sortie": [3, 3, 4, 3, 4, 3, 4, 3, 2, 4],
-        "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
-    },
-    "u18-filles": {
-        "Placement": [3, 4, 3, 3, 2, 4, 3, 4, 2, 3],
-        "Sortie": [2, 3, 4, 3, 3, 3, 4, 3, 2, 4],
-        "Raise": [3, 4, 3, 3, 4, 4, 3, 3, 2, 3],
-        "Garde": [3, 3, 4, 4, 3, 4, 3, 4, 3, 3],
-        "Double sortie": [2, 3, 4, 3, 4, 3, 4, 3, 2, 4],
-        "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
-    },
-    "u20-garcons": {
-        "Placement": [4, 4, 3, 3, 4, 4, 3, 4, 3, 4],
-        "Sortie": [3, 4, 4, 4, 3, 3, 2, 4, 3, 3],
-        "Raise": [4, 4, 3, 3, 3, 4, 3, 4, 3, 3],
-        "Garde": [3, 3, 4, 3, 4, 4, 3, 4, 3, 3],
-        "Double sortie": [3, 3, 4, 3, 4, 3, 4, 3, 2, 4],
-        "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
-    },
-    "u20-filles": {
-        "Placement": [3, 4, 3, 3, 2, 4, 3, 4, 2, 3],
-        "Sortie": [2, 3, 4, 3, 3, 3, 4, 3, 2, 4],
-        "Raise": [3, 4, 3, 3, 4, 4, 3, 3, 2, 3],
-        "Garde": [3, 3, 4, 4, 3, 4, 3, 4, 3, 3],
-        "Double sortie": [2, 3, 4, 3, 4, 3, 4, 3, 2, 4],
-        "Placement gelé": [3, 2, 4, 4, 3, 4, 4, 3, 3, 3]
-    }
-};
 function getCategoryNumber(categoryName) {
-    let categoryNumber;
-    
     switch (categoryName) {
-      case 'u15':
-        categoryNumber = 1;
-        break;
-      case 'u18-garcons':
-        categoryNumber = 2;
-        break;
-      case 'u18-filles':
-        categoryNumber = 3;
-        break;
-      case 'u20-garcons':
-        categoryNumber = 4;
-        break;
-      case 'u20-filles':
-        categoryNumber = 5;
-        break;
-      default:
-        categoryNumber = -1;
-        console.error('Catégorie non reconnue :', categoryName);
-        break;
+        case 'u15': return 1;
+        case 'u18-garcons': return 2;
+        case 'u18-filles': return 3;
+        case 'u20-garcons': return 4;
+        case 'u20-filles': return 5;
+        default:
+            console.error('Catégorie non reconnue :', categoryName);
+            return -1;
     }
-  
-    return categoryNumber;
-  }
-const ctx = document.getElementById('statsChart').getContext('2d');
-var statsChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: Object.keys(statsData["u15"]),
-        datasets: []
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true, max: 100 }
-        }
-    }
-});
-
-var comparisonMode = true;
-
-function toggleMode() {
-    comparisonMode = !comparisonMode;
-    document.getElementById('comparison-mode').style.display = comparisonMode ? 'block' : 'none';
-    document.getElementById('single-mode').style.display = comparisonMode ? 'none' : 'block';
-    document.getElementById('toggle-mode').textContent = comparisonMode ? 'Passer en mode Affichage' : 'Passer en mode Comparaison';
-    updateChart();
 }
 
-async function updateChart() {
-    statsChart.data.datasets = [];
-
-    if (comparisonMode) {
-        const niveau1 = document.getElementById('niveau-select-1').value;
-        const niveau2 = document.getElementById('niveau-select-2').value;
-        let ID_niveau1 = getCategoryNumber(niveau1);
-        let ID_niveau2 = getCategoryNumber(niveau2);
-        console.log(ID_niveau1);
-        console.log(ID_niveau2);
-        const stats1 = await obtenirStat(ID_niveau1);
-        console.log(stats1);
-        
-        const stats2 = await obtenirStat(ID_niveau2);
-        console.log(stats2);
-
-        if (!stats1 || !stats2) {
-            alert("Erreur : données manquantes");
-            return;
-        }
-
-        const moyennes1 = Object.values(stats1).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
-        const moyennes2 = Object.values(stats2).map(scores => (scores.reduce((acc, val) => acc + val, 0) / scores.length) * 25);
-
-        statsChart.data.datasets.push(
-            { label: niveau1, data: moyennes1, backgroundColor: 'rgba(54, 162, 235, 0.5)' },
-            { label: niveau2, data: moyennes2, backgroundColor: 'rgba(255, 99, 132, 0.5)' }
-        );
-    }
-    statsChart.update();
-}
-/*const formData = new FormData();
-    formData.append('action', 'AjouterCompteBD');
-    formData.append('mot_de_passe', mdpTemp);
-    formData.append('email', emailTemp);
-    mdpTemp = "";
-    emailTemp = "";
-    fetch('./data.php', {
-        method: 'POST',
-        body: formData
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur de serveur : ' + response.statusText);
-        }
-        return response.json();
-    }).then(data => {
-        console.log('Réponse du serveur :', data);
-        if (data.status === 'success') {
-        } else {
-            alert('Erreur : ' + data.message);
-        }
-    }).catch(error => {
-        console.error('Erreur lors de la requête fetch:', error);
-    });*/
-
-async function obtenirStat(id_equipe) {
-
+async function getMonEquipeCategoryId() {
     const formData = new FormData();
-    formData.append('action', 'obtenirStat');
-    formData.append('category_id', id_equipe);
+    formData.append('action', 'obtenirMonCategorie');
+
+    try {
+        const response = await fetch('data.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.status === 'success') return data.categorie;
+        console.error('Erreur pour obtenir la catégorie :', data.message);
+    } catch (err) {
+        console.error('Erreur fetch getMonEquipeCategoryId :', err);
+    }
+    return -1;
+}
+
+function extraireTypeEtId(valeur) {
+    if (!valeur.includes(':')) return { type: null, id: null };
+
+    const [type, id] = valeur.split(':');
+    return { type: type === 'm' ? 'equipe' : type, id };
+}
+
+async function obtenirStatEquipe() {
+    const formData = new FormData();
+    formData.append('action', 'obtenirStatMonEquipe');
 
     try {
         const response = await fetch('data.php', {
@@ -159,123 +46,232 @@ async function obtenirStat(id_equipe) {
             body: formData
         });
 
-        if (!response.ok) throw new Error("Erreur HTTP " + response.status);
+        if (!response.ok) {
+            console.error("Erreur HTTP :", response.status);
+            return null;
+        }
 
         const data = await response.json();
+
         if (data.status === 'success') {
-            const donnees = data.stats;
             const noms = {
-            1: "Placement",
-            2: "Sortie",
-            3: "Raise",
-            4: "Garde",
-            5: "Double sortie",
-            6: "Placement gelé"
+                1: "Placement", 2: "Sortie", 3: "Raise",
+                4: "Garde", 5: "Double sortie", 6: "Placement gelé"
+            };
+
+            const resultat = {};
+            for (const item of data.stats) {
+                const nom = noms[item.type_de_lancer_id];
+                if (!resultat[nom]) resultat[nom] = [];
+                resultat[nom][item.indice - 1] = item.valeur;
+            }
+            return resultat;
+        } else {
+            console.error("Statut erreur renvoyé par le serveur :", data.message);
+        }
+    } catch (err) {
+        console.error("Erreur lors de fetch obtenirStatEquipe :", err);
+    }
+
+    return null;
+}
+
+async function obtenirStat(idCategorie) {
+    const formData = new FormData();
+    formData.append('action', 'obtenirStat');
+    formData.append('category_id', idCategorie);
+
+    try {
+        const response = await fetch('data.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            const noms = {
+                1: "Placement", 2: "Sortie", 3: "Raise",
+                4: "Garde", 5: "Double sortie", 6: "Placement gelé"
+            };
+
+            const resultat = {};
+            for (const item of data.stats) {
+                const nom = noms[item.type_de_lancer_id];
+                if (!resultat[nom]) resultat[nom] = [];
+                resultat[nom][item.indice - 1] = item.valeur;
+            }
+
+            return resultat;
+        } else {
+            console.error("Erreur serveur obtenirStat :", data.message);
+        }
+    } catch (err) {
+        console.error("Erreur réseau obtenirStat :", err);
+    }
+    return null;
+}
+
+async function obtenirStatParEvenement(eventId) {
+    const formData = new FormData();
+    formData.append('action', 'obtenirStatEvenementEquipe');
+    formData.append('event_id', eventId);
+
+    try {
+        const response = await fetch('data.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error("Erreur HTTP : " + response.status);
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            const noms = {
+                1: "Placement",
+                2: "Sortie",
+                3: "Raise",
+                4: "Garde",
+                5: "Double sortie",
+                6: "Placement gelé"
             };
 
             const resultat = {};
 
-            for (const item of donnees) {
-            const nom = noms[item.type_de_lancer_id];
-            if (!resultat[nom]) {
-                resultat[nom] = [];
+            for (const item of data.stats) {
+                const nom = noms[item.type_de_lancer_id];
+                if (!resultat[nom]) {
+                    resultat[nom] = [];
+                }
+                resultat[nom][item.indice - 1] = item.valeur;
             }
-            resultat[nom][item.indice - 1] = item.valeur;
-            }
+
             return resultat;
         } else {
-            console.error("Erreur côté serveur :", data.message);
+            console.error("Erreur serveur (obtenirStatParEvenement) :", data.message);
             return null;
         }
+
     } catch (error) {
-        console.error('Erreur lors de la requête fetch :', error);
+        console.error("Erreur réseau (obtenirStatParEvenement) :", error);
         return null;
     }
 }
 
-document.getElementById('toggle-mode').addEventListener('click', () => toggleMode());
-document.getElementById('niveau-select-1').addEventListener('change', () => updateChart());
-document.getElementById('niveau-select-2').addEventListener('change', () => updateChart());
-document.getElementById('niveau-select-single').addEventListener('change', () => updateChart());
 
-
-function ouvrirFormulaireCreationEquipe() {
-    document.getElementById("FormulaireCreationEquipe").style.display = "block";
-}
-function ouvrirFormulaireJoindreEquipe() {
-    ObtenirNomEquipes();
-    document.getElementById("FormulaireRejoindreEquipe").style.display = "block";
-}
-function fermerFormulaireCreationEquipe() {
-    document.getElementById("FormulaireCreationEquipe").style.display = "none";
-}
-
-function ouvrirFormulaireAjoutStatistique(joueur) {
-    document.getElementById("FormulaireChoixDuJoueur").style.display = "none";
-    document.getElementById("FormulaireAjoutStatistique").style.display = "block";
-    document.getElementById("Joueur-ajout-de-stat");
-    document.textContent = joueur;
-    console.log(joueur)
-}
-
-function fermerFormulaireAjoutStatistique() {
-    document.getElementById("FormulaireAjoutStatistique").style.display = "none";
-}
-
-function ouvrirFormulaireChoixDuJoueur(premier,deuxieme,troisieme,quatrieme) {
-    const select = document.getElementById("JoueurChoisi");
-    select.children[0].textContent = premier;
-    select.children[1].textContent = deuxieme;
-    select.children[2].textContent = troisieme;
-    select.children[3].textContent = quatrieme;
-    document.getElementById("FormulaireChoixDuJoueur").style.display = "block";
-}
-function addNewSelect(selectElement) {
-    const selectList = document.getElementById('selectList');
-    
-    if (selectElement.value !== 'null') {
-        const newSelect = document.createElement('li');
-        newSelect.innerHTML = `
-            <select class="select-item" onchange="addNewSelect(this)">
-                <option value="null" selected>Choisir...</option>
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-            </select>
-        `;
-        selectList.appendChild(newSelect);
-    }
-}
-function ObtenirNomEquipes() {
-    const formData = new FormData();
-    formData.append('action', 'obtenirNomEquipe');
-    
-    fetch('data.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Réponse du serveur :', data);
-        if (data.status === 'success') {
-            const select = document.getElementById("nomEquipe");
-            select.innerHTML = "";
-            data.equipes.forEach(equipe => {
-                const option = document.createElement("option");
-                option.value = equipe.id_equipe;
-                option.textContent = equipe.equipe_name;
-                select.appendChild(option);
-            });
-        } else {
-            alert('Erreur : ' + data.message);
+function calculMoyenneParType(data) {
+    const types = ["Placement", "Sortie", "Raise", "Garde", "Double sortie", "Placement gelé"];
+    return types.map(type => {
+        const valeurs = data[type];
+        if (!Array.isArray(valeurs) || !valeurs.length) {
+            return 0;
         }
-    })
-    .catch(error => {
-        console.error('Erreur lors de la requête fetch:', error);
+        const somme = valeurs.reduce((a, b) => a + b, 0);
+        return (somme / valeurs.length) * 25;
     });
 }
+
+async function updateChart() {
+    statsChart.data.datasets = [];
+
+    const raw1 = document.getElementById('niveau-select-1')?.value;
+    const raw2 = document.getElementById('niveau-select-2')?.value;
+    if (!raw1 || !raw2 || raw1 === 'null' || raw2 === 'null') return;
+
+    const obj1 = extraireTypeEtId(raw1);
+    const obj2 = extraireTypeEtId(raw2);
+    const getStats = async (obj) => {
+        switch (obj.type) {
+            case 'e': return await obtenirStatParEvenement(obj.id);
+            case 'c': return await obtenirStat(obj.id);
+            case 'equipe': return await obtenirStatEquipe();
+            default: return null;
+        }
+    };
+
+    const stats1 = await getStats(obj1);
+    const stats2 = await getStats(obj2);
+    if (!stats1 || !stats2) {
+        alert("Erreur : données manquantes");
+        return;
+    }
+
+    const moyennes1 = nettoyerMoyennes(calculMoyenneParType(stats1));
+    const moyennes2 = nettoyerMoyennes(calculMoyenneParType(stats2));
+    if (moyennes1.some(isNaN) || moyennes2.some(isNaN)) {
+        console.error("Une des moyennes contient une valeur invalide", moyennes1, moyennes2);
+        alert("Erreur : une des sources de données contient des valeurs invalides.");
+        return;
+    }
+    
+    statsChart.data.labels = ["Placement", "Sortie", "Raise", "Garde", "Double sortie", "Placement gelé"];
+    statsChart.data.datasets = [
+        {
+            label: `Choix 1`,
+            data: moyennes1,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+        },
+        {
+            label: `Choix 2`,
+            data: moyennes2,
+            backgroundColor: 'rgba(255, 99, 132, 0.5)'
+        }
+    ];
+    if (!statsChart.data.labels || statsChart.data.labels.length === 0) {
+        console.error("Erreur critique : labels manquants pour le graphique.");
+        return;
+    }
+    statsChart.update();
+}
+
+function nettoyerMoyennes(moyennes) {
+    return moyennes.map(val => (isFinite(val) && !isNaN(val)) ? val : 0);
+}
+
+const ctx = document.getElementById('statsChart')?.getContext('2d');
+if (ctx) {
+    var statsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+} else {
+    console.error("Canvas 'statsChart' introuvable.");
+}
+
+
+const originalConsoleError = console.error;
+console.error = function (...args) {
+    if (
+        typeof args[0] === 'string' &&
+        args[0].includes("Cannot read properties of null (reading 'getLabelAndValue')")
+    ) {
+        return;
+    }
+    originalConsoleError.apply(console, args);
+};
+
+
+document.getElementById('niveau-select-1')?.addEventListener('change', () => updateChart());
+document.getElementById('niveau-select-2')?.addEventListener('change', () => updateChart());
+

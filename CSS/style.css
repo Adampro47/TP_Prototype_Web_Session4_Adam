@@ -1,75 +1,145 @@
-/* Button used to open the contact form - fixed at the bottom of the page */
-.open-button {
-  background-color: #555;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  opacity: 0.8;
-  /* position: fixed;
-  bottom: 23px;
-  right: 28px;
-  width: 280px; */
+/* Réinitialisation de base */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
 }
 
-/* The popup form - hidden by default */
+/* Titre principal */
+h2 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* En-tête boutons */
+header {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+/* Boutons d'action */
+button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+button:hover:not(.disabled) {
+    background-color: #0056b3;
+}
+
+/* Bouton désactivé */
+button.disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Sélecteurs */
+#comparison-mode {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+select {
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Canvas graphique */
+canvas#statsChart {
+    display: block;
+    margin: 20px auto;
+    width: 95%;
+    max-width: 1400px;
+    aspect-ratio: 8/5;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Popup générique */
 .form-popup {
     display: none;
     position: fixed;
-    top: 50%;       
-    left: 50%;       
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    border: 3px solid #f1f1f1;
-    z-index: 9;
-  }
-  
-  /* Add styles to the form container */
-  .form-container {
-    max-width: 300px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    padding: 24px;
+    width: 320px;
+    z-index: 1000;
+}
+
+/* Formulaire */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-container h1 {
+    background-color: #007bff;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin: -24px -24px 12px -24px;
+}
+
+.form-container label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-container input[type="text"],
+.form-container input[type="password"],
+.form-container input[type="date"],
+.form-container select {
     padding: 10px;
-    background-color: white;
-  }
-
-/* Full-width input fields */
-.form-container input[type=text], .form-container input[type=password] {
-  width: 90%;
-  padding: 5%;
-  margin: 5px 0 22px 0;
-  border: none;
-  background: #f1f1f1;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* When the inputs get focus, do something */
-.form-container input[type=text]:focus, .form-container input[type=password]:focus {
-  background-color: #ddd;
-  outline: none;
-}
-
-/* Set a style for the submit/login button */
 .form-container .btn {
-  background-color: #04AA6D;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  margin-bottom:10px;
-  opacity: 0.8;
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-/* Add a red background color to the cancel button */
+.form-container .btn:hover {
+    background-color: #218838;
+}
+
 .form-container .cancel {
-  background-color: red;
+    background-color: #dc3545;
 }
 
-/* Add some hover effects to buttons */
-.form-container .btn:hover, .open-button:hover {
-  opacity: 1;
-}
-button.disabled {
-    background-color: #ccc;
-    color: #666;
-    cursor: not-allowed;
-    border: 1px solid #aaa;
-    pointer-events: none;
+.form-container .cancel:hover {
+    background-color: #c82333;
 }

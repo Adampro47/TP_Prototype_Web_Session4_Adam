@@ -25,44 +25,23 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <main>
-        <h2>Statistiques générales</h2>
+        <h2>CurlStat</h2>
         <header>
             <button id="creerEquipe" onclick="ouvrirFormulaireCreationEquipe()">Créer une équipe</button>
             <button id="RejoindreEquipe" onclick="ouvrirFormulaireJoindreEquipe()">Rejoindre une équipe</button>
+            <button id="AjouterStatistique" >Ajouter des statistiques</button>
             <button onclick="ouvrirFormulaireCreationEvenement()">Créer un événement</button>
 
         </header>
         <h2></h2>
-        <p>Comparez ou affichez une seule catégorie.</p>
-
-        <button id="toggle-mode">Passer en mode Affichage</button>
         
         <div id="comparison-mode">
             <select id="niveau-select-1">
-                <option value="u15">U15</option>
-                <option value="u18-garcons">U18 Garçons</option>
-                <option value="u18-filles">U18 Filles</option>
-                <option value="u20-garcons">U20 Garçons</option>
-                <option value="u20-filles">U20 Filles</option>
-                <option value="mon-equipe">Mon équipe</option>
+                <option value="null">Choisir un événement</option>
             </select>
             
             <select id="niveau-select-2">
-                <option value="u15">U15</option>
-                <option value="u18-garcons">U18 Garçons</option>
-                <option value="u18-filles">U18 Filles</option>
-                <option value="u20-garcons">U20 Garçons</option>
-                <option value="u20-filles">U20 Filles</option>
-            </select>
-        </div>
-        
-        <div id="single-mode" style="display: none;">
-            <select id="niveau-select-single">
-                <option value="u15">U15</option>
-                <option value="u18-garcons">U18 Garçons</option>
-                <option value="u18-filles">U18 Filles</option>
-                <option value="u20-garcons">U20 Garçons</option>
-                <option value="u20-filles">U20 Filles</option>
+                <option value="null">Choisir un événement</option>
             </select>
         </div>
 
@@ -106,16 +85,15 @@ if (!isset($_SESSION['user_id'])) {
                 <button type="submit" class="btn">Rejoindre l'équipe</button>
             </form>
         </div>
-        <div class="form-popup" id="FormulaireChoixDuJoueur">
-            <form method="post" id="formChoixDuJoueur" class="form-container">
-                <h1>Choisir le joueur</h1>
-                <select id="JoueurChoisi">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                </select>
-                <button type="submit" class="btn">Choisir le joueur</button>
+        <div class="form-popup" id="popupFormulaireChoixEvenement">
+            <form method="post" id="FormulaireChoixEvenement" class="form-container">
+                <h1>Choisir l'événement</h1>
+                <ul id="selectEvenement">
+                    <li><select id="nomEvenement" name="select_Evenement" class="select-item">
+                        <option value="null">---</option>
+                    </select></li>
+                </ul>
+                <button type="submit" class="btn">Choisir</button>
             </form>
         </div>
 
@@ -146,22 +124,6 @@ if (!isset($_SESSION['user_id'])) {
                     </select></li>
                 </ul>
                 <button type="submit" class="btn">Ajouter</button>
-            </form>
-        </div>
-        <div class="form" id="testsqlform">
-            <form id="formtestsql" method="POST" class="form-container">
-                <h1>TestStat</h1>
-                <label for="categorieEquipe">Choisir la catégorie de l'équipe</label>
-                <ul id="choisircategorieequipetestsql">
-                    <li><select name="select_Equipe2" class="select-item">
-                        <option value="u15">U15</option>
-                        <option value="u18-garcons">U18 Garçons</option>
-                        <option value="u18-filles">U18 Filles</option>
-                        <option value="u20-garcons">U20 Garçons</option>
-                        <option value="u20-filles">U20 Filles</option>
-                    </select></li>
-                </ul>
-                <button type="submit" class="btn">tester</button>
             </form>
         </div>
         <canvas id="statsChart"></canvas>

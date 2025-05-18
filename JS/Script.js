@@ -1,3 +1,9 @@
+window.addEventListener('error', function (e) {
+    if (e.message.includes("Cannot read properties of null (reading 'getLabelAndValue')")
+    ) {
+        e.preventDefault();
+    }
+});
 let emailTemp = "";
 let mdpTemp = "";
 function ouvrirFormulaireConnexion() {
@@ -35,7 +41,6 @@ function VerifierConnexion() {
     .then(data => {
         console.log('Réponse du serveur :', data);
         if (data.status === 'success') {
-            // Demander la vérification 2FA
             EnvoyerCode(email);
             document.getElementById('FormulaireConnexion').style.display = 'none';
             document.getElementById('FormulaireVerifier2FAConnexion').style.display = 'block';
@@ -213,3 +218,34 @@ async function VerifierEmail() {
         return false;
     }
 }
+async function chargerOptionsComparaison() {
+    const formData = new FormData();
+    formData.append('action', 'obtenirEvenementsEtCategories');
+
+    const response = await fetch('data.php', { method: 'POST', body: formData });
+    const data = await response.json();
+    if (data.status !== 'success') {
+        console.error('Erreur chargement :', data.message);
+        return;
+    }
+
+    const select1 = document.getElementById('niveau-select-1');
+    const select2 = document.getElementById('niveau-select-2');
+    [select1, select2].forEach(select => {
+        select.innerHTML = '<option value="null">Choisir…</option>';
+        const optGroupCat = document.createElement('optgroup');
+        optGroupCat.label = "Catégories";
+
+        data.categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = `c:${cat.id}`;
+            option.textContent = cat.nom;
+            optGroupCat.appendChild(option);
+        });
+
+        select.appendChild(optGroupCat);
+    });
+}
+window.addEventListener('load', () => {
+    chargerOptionsComparaison();
+});

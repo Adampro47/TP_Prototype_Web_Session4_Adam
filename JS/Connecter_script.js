@@ -15,15 +15,30 @@ window.addEventListener('load', function () {
         });
 });
 
+const formChoixEvenement = document.getElementById('FormulaireChoixEvenement');
+if (formChoixEvenement) {
+    formChoixEvenement.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const evenementSelect = document.getElementById("nomEvenement");
+        const nomEvenementTexte = evenementSelect.options[evenementSelect.selectedIndex].text;
+
+        if (evenementSelect.value === "null") {
+            alert("Veuillez choisir un événement.");
+            return;
+        }
+
+
+        ouvrirFormulaireAjoutStatistique(nomEvenementTexte);
+    });
+}
+
 const formEvent = document.getElementById('formCreationEvenement');
 if (formEvent) {
     formEvent.addEventListener('submit', function (event) {
-        alert("test");
         event.preventDefault();
         const formData = new FormData(this);
         formData.append('action', 'creerEvenement');
-        alert("test1");
-
         fetch('data.php', {
             method: 'POST',
             body: formData
@@ -97,35 +112,7 @@ if (testForm) {
 const btnAjouterStat = document.getElementById('AjouterStatistique');
 if (btnAjouterStat) {
     btnAjouterStat.addEventListener('click', function (event) {
-        event.preventDefault();
-        const formData = new FormData();
-        formData.append('action', 'obtenirNomJoueur');
-
-        fetch('data.php', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
-            return response.json();
-        }).then(data => {
-            if (data.status === 'success') {
-                ouvrirFormulaireChoixDuJoueur(data.premier, data.deuxieme, data.troisieme, data.quatrieme);
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de la requête fetch:', error);
-        });
-    });
-}
-
-const choixForm = document.getElementById('formChoixDuJoueur');
-if (choixForm) {
-    choixForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const selectElement = document.getElementById('JoueurChoisi');
-        const joueurchoisiTexte = selectElement.options[selectElement.selectedIndex].text;
-        ouvrirFormulaireAjoutStatistique(joueurchoisiTexte);
+        obtenirNomEvenement();
     });
 }
 
@@ -133,7 +120,6 @@ const creationForm = document.getElementById('formCreationEquipe');
 if (creationForm) {
     creationForm.addEventListener('submit', function (event) {
         event.preventDefault();
-        alert("creer equipe");
         const formData = new FormData(this);
         formData.append('action', 'creerEquipe');
 
@@ -159,16 +145,19 @@ const ajoutStatForm = document.getElementById('formAjoutStatistique');
 if (ajoutStatForm) {
     ajoutStatForm.addEventListener('submit', function (event) {
         event.preventDefault();
-        const formData = new FormData(this);
-        const selectItems = document.querySelectorAll('.select-item');
-        selectItems.forEach((select, index) => {
-            if (select.value !== 'null' && select.value !== '') {
-                formData.append(`select_${index}`, select.value);
-            }
-        });
+        const formData = new FormData();
+
 
         formData.append('action', 'ajouterStatistique');
+        formData.append('type_lancer', document.getElementById('type-lancer').value);
+        formData.append('evenement_id', this.dataset.evenement);
 
+        document.querySelectorAll('#selectList .select-item').forEach(select => {
+            if (select.name.startsWith('select_') && select.value !== 'null' && select.value !== '') {
+                formData.append(select.name, select.value);
+            }
+        });
+        console.log([...formData]);
         fetch('data.php', {
             method: 'POST',
             body: formData
@@ -186,8 +175,155 @@ if (ajoutStatForm) {
     });
 }
 
-// Fonction en dehors du load
+
 function ouvrirFormulaireCreationEvenement() {
     const formDiv = document.getElementById("FormulaireCreationEvenement");
     if (formDiv) formDiv.style.display = "block";
 }
+
+function ouvrirFormulaireAjoutStatistique() {
+    document.getElementById('selectList').dataset.index = 1;
+    document.getElementById('selectList').innerHTML = `
+        <li>
+            <select name="select_0" class="select-item" onchange="addNewSelect(this)">
+                <option value="null" selected>Choisir...</option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </li>
+    `;
+
+    document.getElementById("popupFormulaireChoixEvenement").style.display = "none";
+    document.getElementById("FormulaireAjoutStatistique").style.display = "block";
+
+    const evenementSelect = document.getElementById("nomEvenement");
+    if (!evenementSelect || evenementSelect.selectedIndex === -1) {
+        console.error("Événement non sélectionné");
+        return;
+    }
+
+    const nomEvenementTexte = evenementSelect.options[evenementSelect.selectedIndex].text;
+
+
+    const label = document.getElementById("Joueur-ajout-de-stat");
+    label.textContent = `Ajouter des statistiques au tournoi : ${nomEvenementTexte}`;
+
+
+    document.getElementById("formAjoutStatistique").dataset.evenement = evenementSelect.value;
+}
+
+function obtenirNomEvenement() {
+    const formData = new FormData();
+    formData.append('action', 'obtenirNomEvenement');
+    
+    fetch('data.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Réponse du serveur :', data);
+        if (data.status === 'success') {
+            const select = document.getElementById("nomEvenement");
+            select.innerHTML = "";
+            data.evenement.forEach(evenement => {
+                const option = document.createElement("option");
+                option.value = evenement.id_event;
+                option.textContent = evenement.nom;
+                select.appendChild(option);
+            });
+            document.getElementById("popupFormulaireChoixEvenement").style.display = "block";
+        } else {
+            alert('Erreur : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors de la requête fetch:', error);
+    });
+}
+
+function addNewSelect(selectElement) {
+    const selectList = document.getElementById('selectList');
+
+    if (selectElement.value !== 'null') {
+        const currentIndex = parseInt(selectList.dataset.index || '1');
+
+        const newLi = document.createElement('li');
+        newLi.innerHTML = `
+            <select name="select_${currentIndex}" class="select-item" onchange="addNewSelect(this)">
+                <option value="null" selected>Choisir...</option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        `;
+
+        selectList.appendChild(newLi);
+        selectList.dataset.index = currentIndex + 1;
+    }
+}
+
+async function chargerOptionsComparaison() {
+    const formData = new FormData();
+    formData.append('action', 'obtenirEvenementsEtCategories');
+
+    const response = await fetch('data.php', { method: 'POST', body: formData });
+    const data = await response.json();
+    if (data.status !== 'success') {
+        console.error('Erreur chargement :', data.message);
+        return;
+    }
+
+    const select1 = document.getElementById('niveau-select-1');
+    const select2 = document.getElementById('niveau-select-2');
+    [select1, select2].forEach(select => {
+        select.innerHTML = '<option value="null">Choisir…</option>';
+
+        const optGroupEquipe = document.createElement('optgroup');
+        optGroupEquipe.label = "Équipe";
+        const optMonEquipe = document.createElement('option');
+        optMonEquipe.value = 'equipe:mon_equipe';
+        optMonEquipe.textContent = 'Mon équipe (tous les événements)';
+        optGroupEquipe.appendChild(optMonEquipe);
+        select.appendChild(optGroupEquipe);
+
+        const optGroupEv = document.createElement('optgroup');
+        optGroupEv.label = "Mes événements";
+
+        const optGroupCat = document.createElement('optgroup');
+        optGroupCat.label = "Catégories";
+
+        data.evenements.forEach(ev => {
+            const option = document.createElement('option');
+            option.value = `e:${ev.id_event}`;
+            option.textContent = ev.nom;
+            optGroupEv.appendChild(option);
+        });
+
+        data.categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = `c:${cat.id}`;
+            option.textContent = cat.nom;
+            optGroupCat.appendChild(option);
+        });
+
+        select.appendChild(optGroupCat);
+        select.appendChild(optGroupEv);
+    });
+}
+function fermerFormulaireAjoutStatistique() {
+    document.getElementById("FormulaireAjoutStatistique").style.display = "none";
+    document.getElementById("selectList").innerHTML = "";
+    document.getElementById("selectList").dataset.index = "1";
+}
+window.addEventListener('load', () => {
+    chargerOptionsComparaison();
+});
