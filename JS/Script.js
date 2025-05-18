@@ -39,7 +39,6 @@ function VerifierConnexion() {
         return response.json();
     })
     .then(data => {
-        console.log('Réponse du serveur :', data);
         if (data.status === 'success') {
             EnvoyerCode(email);
             document.getElementById('FormulaireConnexion').style.display = 'none';
@@ -178,7 +177,6 @@ function AjouterCompteBD() {
         }
         return response.json();
     }).then(data => {
-        console.log('Réponse du serveur :', data);
         if (data.status === 'success') {
         } else {
             alert('Erreur : ' + data.message);
@@ -205,7 +203,6 @@ async function VerifierEmail() {
         }
 
         const data = await response.json();
-        console.log('Réponse du serveur :', data);
 
         if (data.status === 'success') {
             return true;

@@ -58,7 +58,7 @@ function verifierEmailExistant($email) {
         $count = $requete->fetchColumn();
 
         if ($count > 0) {
-            echo json_encode(['status' => 'error', 'message' => 'L\'email est déjà utilisé']);
+            echo json_encode(['status' => 'error', 'message' => 'L\'email est déjà utilisé ou est invalide']);
             exit;
         }
         echo json_encode(['status' => 'success']);
@@ -338,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 
     switch ($action) {
         case 'creerEquipe':
-            $nom = filter_input(INPUT_POST, 'nomEvenement', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $nom = filter_input(INPUT_POST, 'Equipe', FILTER_SANITIZE_STRING);
             $categorie = filter_input(INPUT_POST, 'select_Equipe', FILTER_SANITIZE_NUMBER_INT);
             insertEquipe($nom, $categorie);
             break;

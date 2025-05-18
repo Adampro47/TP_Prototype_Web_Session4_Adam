@@ -31,7 +31,7 @@ function envoyerMail($to, $message) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
+    $action = $_POST['action'];
 
     if (!$action) {
         echo json_encode(['status' => 'error', 'message' => 'L\'action est manquante!']);

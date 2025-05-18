@@ -3,16 +3,38 @@ window.addEventListener('load', function () {
         method: 'POST',
         body: new URLSearchParams({ action: 'verifierRejoignable' })
     }).then(response => response.json())
-        .then(data => {
-            if (data.status === 'success' && data.dejaRejoint) {
-                const btn = document.getElementById('RejoindreEquipe');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.classList.add('disabled');
-                    btn.textContent = "Équipe déjà rejointe";
+      .then(data => {
+        const btnRejoindre = document.getElementById('RejoindreEquipe');
+        const btnAjouter = document.getElementById('AjouterStatistique');
+        const btnCreerEvent = document.querySelector('button[onclick="ouvrirFormulaireCreationEvenement()"]');
+        const btnCreer = document.getElementById('creerEquipe');
+
+        if (data.status === 'success') {
+            if (data.dejaRejoint) {
+                if (btnRejoindre) {
+                    btnRejoindre.disabled = true;
+                    btnRejoindre.classList.add('disabled');
+                    btnRejoindre.textContent = "Équipe déjà rejointe";
+                }
+                if (btnCreer) {
+                btnCreer.disabled = true;
+                btnCreer.classList.add('disabled');
+                btnCreer.textContent = "Déjà dans une équipe";
+            }
+            } else {
+                if (btnAjouter) {
+                    btnAjouter.disabled = true;
+                    btnAjouter.classList.add('disabled');
+                    btnAjouter.textContent = "Rejoignez une équipe d’abord";
+                }
+                if (btnCreerEvent) {
+                    btnCreerEvent.disabled = true;
+                    btnCreerEvent.classList.add('disabled');
+                    btnCreerEvent.textContent = "Rejoignez une équipe d’abord";
                 }
             }
-        });
+        }
+    });
 });
 
 const formChoixEvenement = document.getElementById('FormulaireChoixEvenement');
@@ -30,6 +52,45 @@ if (formChoixEvenement) {
 
 
         ouvrirFormulaireAjoutStatistique(nomEvenementTexte);
+    });
+}
+function ouvrirFormulaireCreationEquipe() {
+    const form = document.getElementById("FormulaireCreationEquipe");
+    if (form) {
+        form.style.display = "block";
+    }
+}
+function ouvrirFormulaireJoindreEquipe() {
+    const form = document.getElementById("FormulaireRejoindreEquipe");
+    const select = document.getElementById("nomEquipe");
+
+    select.innerHTML = `<option value="null">---</option>`;
+
+    const formData = new FormData();
+    formData.append('action', 'obtenirNomEquipe');
+
+    fetch('data.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Équipes chargées :', data);
+        if (data.status === 'success') {
+            data.equipes.forEach(equipe => {
+                const option = document.createElement('option');
+                option.value = equipe.id_equipe;
+                option.textContent = equipe.equipe_name;
+                select.appendChild(option);
+            });
+            form.style.display = "block";
+        } else {
+            alert("Erreur : " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Erreur lors du fetch :", error);
+        alert("Erreur de chargement des équipes.");
     });
 }
 
@@ -69,6 +130,7 @@ if (formRejoindre) {
                 if (data.status === 'success') {
                     alert(data.message);
                     document.getElementById("formRejoindreEquipe").style.display = "none";
+
                     const btn = document.getElementById('RejoindreEquipe');
                     if (btn) {
                         btn.disabled = true;
@@ -81,31 +143,6 @@ if (formRejoindre) {
             }).catch(error => {
                 console.error('Erreur fetch :', error);
             });
-    });
-}
-
-const testForm = document.getElementById('formtestsql');
-if (testForm) {
-    testForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const formData = new FormData();
-        formData.append('action', 'obtenirStatCategorie');
-
-        fetch('data.php', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (!response.ok) throw new Error('Erreur de serveur : ' + response.statusText);
-            return response.json();
-        }).then(data => {
-            if (data.status === 'success') {
-                alert(JSON.stringify(data.stat));
-            } else {
-                alert('Erreur : ' + data.message);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de la requête fetch:', error);
-        });
     });
 }
 
@@ -128,7 +165,6 @@ if (creationForm) {
             body: formData
         }).then(response => response.json())
             .then(data => {
-                console.log('Réponse serveur:', data);
                 if (data.status === 'success') {
                     fermerFormulaireCreationEquipe();
                     alert(data.message || "Équipe créée.");
@@ -157,7 +193,6 @@ if (ajoutStatForm) {
                 formData.append(select.name, select.value);
             }
         });
-        console.log([...formData]);
         fetch('data.php', {
             method: 'POST',
             body: formData
@@ -175,7 +210,13 @@ if (ajoutStatForm) {
     });
 }
 
-
+function fermerFormulaireCreationEquipe() {
+    const form = document.getElementById("FormulaireCreationEquipe");
+    if (form) {
+        form.style.display = "none";
+        document.getElementById("formCreationEquipe").reset();
+    }
+}
 function ouvrirFormulaireCreationEvenement() {
     const formDiv = document.getElementById("FormulaireCreationEvenement");
     if (formDiv) formDiv.style.display = "block";
@@ -228,7 +269,6 @@ function obtenirNomEvenement() {
         return response.json();
     })
     .then(data => {
-        console.log('Réponse du serveur :', data);
         if (data.status === 'success') {
             const select = document.getElementById("nomEvenement");
             select.innerHTML = "";
