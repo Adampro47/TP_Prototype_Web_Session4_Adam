@@ -17,7 +17,7 @@ require_once '/home/bedardh25techinf/etc/bedard.h25.techinfo420.ca/connexion.php
 
 
 function logMessage($message) {
-    $fichierLog = '/home/bedardh25techinf/log/curlstat.log';
+    $fichierLog = '/home/bedardh25techinf/logs/curlstat.log';
     $date = date('Y-m-d H:i:s');
     $texte = "[$date] $message" . PHP_EOL;
 
